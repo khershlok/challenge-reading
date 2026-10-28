@@ -204,7 +204,7 @@ function renderAbout() {
       <li>Keep the logic visible with words such as <em>because</em>, <em>however</em> and <em>therefore</em>.</li>
     </ul>
     <h3>Where the lessons come from</h3>
-    <p>Nothing is planned in advance. Claude reads the news several times a day: BBC News, The New York Times, The Economist, The Guardian, The Conversation, Aeon and Psyche. Every Sunday it writes the next lesson about the week's most interesting story, ready for Monday. Some New York Times and Economist links need a subscription.</p>
+    <p>Nothing is planned in advance. Claude reads the news in depth three times a day: BBC News, The New York Times, The Economist, The Guardian, The Conversation, Aeon and Psyche. Every Sunday it writes the next lesson about the week's most interesting story, ready for Monday. Some New York Times and Economist links need a subscription.</p>
     <p>Your drafts and ticks are saved in this browser only.</p>`;
 }
 
@@ -224,7 +224,7 @@ function renderQuestions(about) {
   const answers = (window.ANSWERS || []).slice().sort((a, b) => b.n - a.n);
   app.innerHTML = `
     <h1>Question bank</h1>
-    <p class="standfirst">Something in the news confusing? Ask here. Claude checks for new questions every hour during the day, and every answer is kept below.</p>
+    <p class="standfirst">Something in the news confusing? Ask here. Claude checks for new questions three times a day (7:30am, 2:30pm and 9:30pm), and every answer is kept below.</p>
     <div class="box">
       <label class="task-q" for="q">Your question${about ? ` about <em>${about}</em>` : ''}</label>
       <textarea id="q" placeholder="e.g. Why would the Atlantic currents collapsing make Britain colder, if the world is getting warmer?"></textarea>
