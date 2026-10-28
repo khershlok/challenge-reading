@@ -103,6 +103,17 @@ button.secondary { background: transparent; color: var(--accent); }
 .week-list .locked { color: var(--muted); }
 .progress { font-family: var(--sans); font-size: 0.9rem; color: var(--muted); margin-bottom: 16px; }
 
+.news-teaser ul { margin: 0; padding-left: 20px; font-size: 0.95rem; }
+.news-teaser li { margin: 4px 0; }
+.news-teaser .kicker { margin-bottom: 8px; }
+.source-inline { font-family: var(--sans); font-size: 0.75rem; color: var(--muted); }
+.news-item { border-top: 1px solid var(--line); padding-top: 20px; margin-top: 24px; }
+.news-item h3 { margin-top: 4px; }
+.news-item h3 a { color: var(--ink); text-decoration: none; }
+.news-item h3 a:hover { color: var(--accent); }
+.news-q { background: var(--accent-soft); padding: 10px 14px; border-radius: 8px; }
+nav { flex-wrap: wrap; row-gap: 4px; }
+
 @media (max-width: 560px) {
   body { font-size: 17px; }
   h1 { font-size: 1.8rem; }

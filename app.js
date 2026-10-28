@@ -28,6 +28,51 @@ function tags(w) {
   return '<span class="tag">' + w.theme + '</span>' + (w.ai ? '<span class="tag ai">AI</span>' : '');
 }
 
+// News issues are keyed by the Monday they belong to; hide any dated in the future.
+const NEWS = (window.NEWS || [])
+  .filter(i => new Date(i.weekOf + 'T00:00:00') <= new Date())
+  .sort((a, b) => b.weekOf.localeCompare(a.weekOf));
+
+function fmtIso(s) { return fmt(new Date(s + 'T00:00:00')); }
+
+function newsTeaser() {
+  const latest = NEWS[0];
+  if (!latest) return '';
+  return `
+    <div class="box news-teaser">
+      <p class="kicker">In the news · week of ${fmtIso(latest.weekOf)}</p>
+      <ul>${latest.items.map(it => `<li><a href="#news">${it.title}</a> <span class="source-inline">${it.source}</span>${it.ai ? ' <span class="tag ai">AI</span>' : ''}</li>`).join('')}</ul>
+    </div>`;
+}
+
+function newsItem(it) {
+  const linked = WEEKS.find(w => w.n === it.week);
+  return `
+    <div class="news-item">
+      <p class="kicker"><span class="tag">${it.theme}</span>${it.ai ? '<span class="tag ai">AI</span>' : ''} ${it.source} · ${fmtIso(it.date)}</p>
+      <h3><a href="${it.url}" target="_blank" rel="noopener">${it.title}</a></h3>
+      <p class="source">${it.author}</p>
+      <p>${it.summary}</p>
+      <p><strong>Why read it:</strong> ${it.why}${linked && isUnlocked(linked.n) ? ` See <a href="#week-${linked.n}">Week ${linked.n}: ${linked.title}</a>.` : ''}</p>
+      <p class="news-q"><strong>Think about:</strong> ${it.question}</p>
+    </div>`;
+}
+
+function renderNews() {
+  if (!NEWS.length) { app.innerHTML = '<h1>In the news</h1><p>The first issue arrives on Monday.</p>'; return; }
+  const [latest, ...older] = NEWS;
+  app.innerHTML = `
+    <h1>In the news</h1>
+    <p class="standfirst">Real articles from the past week, chosen for the General paper. A new issue arrives every Monday. The guidance says the best preparation is "regular reading of high-quality media".</p>
+    <p class="section-label">Week of ${fmtIso(latest.weekOf)}</p>
+    <p>${latest.intro}</p>
+    ${latest.items.map(newsItem).join('')}
+    ${older.length ? `<h2>Earlier issues</h2>${older.map(i => `
+      <details><summary>Week of ${fmtIso(i.weekOf)} · ${i.items.length} articles</summary>
+        <p>${i.intro}</p>${i.items.map(newsItem).join('')}
+      </details>`).join('')}` : ''}`;
+}
+
 function renderWeek(w) {
   const d = w.drill;
   const prev = WEEKS.find(x => x.n === w.n - 1);
@@ -36,6 +81,7 @@ function renderWeek(w) {
     <p class="kicker">Week ${w.n} · ${fmt(unlockDate(w.n))} ${tags(w)}</p>
     <h1>${w.title}</h1>
     <p class="standfirst">${w.standfirst}</p>
+    ${w === currentWeek() ? newsTeaser() : ''}
     <article>${w.article}</article>
 
     <div class="box">
@@ -151,6 +197,7 @@ function route() {
   const m = h.match(/^week-(\d+)$/);
   if (h === 'archive') renderArchive();
   else if (h === 'about') renderAbout();
+  else if (h === 'news') renderNews();
   else if (m) {
     const w = WEEKS.find(x => x.n === +m[1]);
     if (w && isUnlocked(w.n)) renderWeek(w); else renderArchive();
