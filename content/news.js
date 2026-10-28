@@ -13,7 +13,7 @@ window.NEWS = [
         url: "https://theconversation.com/serbias-leaderless-student-movement-has-won-a-historic-election-but-what-happens-next-295268",
         theme: "Politics",
         ai: false,
-        week: 2,
+        week: null,
         summary: "A student-led anti-corruption coalition with no single leader grew out of protests in 2025. It reportedly won a majority in Serbia's parliamentary election on 25 October 2026, and President Vučić's party conceded quickly. The author warns that the movement's factions have hidden their differences and will now have to govern without experience.",
         why: "This is a rare case of protest leading directly to a change of government through the ballot box. It is useful evidence for 'Do protests change anything?'",
         question: "Is a movement without leaders more democratic, or simply less able to govern?"
@@ -26,7 +26,7 @@ window.NEWS = [
         url: "https://theconversation.com/what-is-artificial-general-intelligence-and-is-it-already-here-293600",
         theme: "Mind",
         ai: true,
-        week: 5,
+        week: null,
         summary: "OpenAI's president has said he thinks AGI, AI that matches humans across most thinking tasks, has effectively arrived with the company's newest model. The author shows that there is no agreed definition of AGI and that test results depend heavily on who runs them. He concludes that the evidence points in more than one direction.",
         why: "This shows how much depends on definitions. 'Can a machine think?' cannot be answered until you say what thinking is.",
         question: "If experts cannot agree on what 'general intelligence' means, should we stop using the term?"
@@ -39,7 +39,7 @@ window.NEWS = [
         url: "https://theconversation.com/could-humanoid-robots-replace-soldiers-on-the-battlefield-292913",
         theme: "Ethics",
         ai: true,
-        week: 11,
+        week: null,
         summary: "Ground robots are already used in Ukraine for evacuating casualties and engineering work. But the author argues that human-shaped combat robots face big practical problems: cost, battery life, and control links that can be jammed or cut. Simpler wheeled machines are likely to be more useful.",
         why: "The article is about engineering, but it raises a question it does not answer: should a machine ever decide to kill? Use it alongside Week 11.",
         question: "Would war become more or less likely if no soldiers' lives were at risk?"
@@ -65,7 +65,7 @@ window.NEWS = [
         url: "https://aeon.co/essays/the-more-we-rely-on-tech-the-more-we-deskill-our-bodies",
         theme: "Happiness",
         ai: true,
-        week: 13,
+        week: null,
         summary: "This is a long essay, about 25 minutes to read. It argues that relying on GPS, phones and AI is wearing away skills our bodies evolved over millions of years, such as finding our way, remembering and moving. It cites studies on GPS users' spatial memory, and on people who lose writing confidence after copying AI text.",
         why: "It pairs well with the experience machine. It adds the idea that effort is part of what makes a skill, and perhaps a life, our own.",
         question: "Should we ever choose to do things the hard way when a machine could do them for us?"

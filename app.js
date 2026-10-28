@@ -67,6 +67,7 @@ function newsItem(it) {
       <p>${it.summary}</p>
       <p><strong>Why read it:</strong> ${it.why}${linked && isUnlocked(linked.n) ? ` See <a href="#week-${linked.n}">Week ${linked.n}: ${linked.title}</a>.` : ''}</p>
       <p class="news-q"><strong>Think about:</strong> ${it.question}</p>
+      <p class="source"><a href="#questions/${encodeURIComponent(it.title)}">Confused by something here? Ask a question →</a></p>
     </div>`;
 }
 
@@ -142,7 +143,7 @@ function renderWeek(w) {
     </div>
     <div class="week-nav">
       <span>${prev ? `<a href="#week-${prev.n}">← Week ${prev.n}</a>` : ''}</span>
-      <span>${next && isUnlocked(next.n) ? `<a href="#week-${next.n}">Week ${next.n} →</a>` : next ? `Week ${next.n} unlocks ${fmt(unlockDate(next.n))}` : ''}</span>
+      <span>${next && isUnlocked(next.n) ? `<a href="#week-${next.n}">Week ${next.n} →</a>` : `Week ${w.n + 1} arrives ${fmt(unlockDate(w.n + 1))}`}</span>
     </div>`;
 
   // Drafts are kept per week so a student can come back to them.
@@ -171,8 +172,8 @@ function renderArchive() {
   const done = WEEKS.filter(w => isDone(w.n)).length;
   app.innerHTML = `
     <h1>All weeks</h1>
-    <p class="progress">${done} of ${WEEKS.length} weeks finished. A new week unlocks every Monday.</p>
-    <ul class="week-list">${WEEKS.map(w => {
+    <p class="progress">${done} of ${WEEKS.filter(w => isUnlocked(w.n)).length} weeks finished. Each lesson is written on Sunday from that week's news, and appears on Monday.</p>
+    <ul class="week-list">${WEEKS.filter(w => isUnlocked(w.n)).map(w => {
       const inner = `<span class="num">Wk ${w.n}</span>
         <span class="t">${w.title}<span class="s">${w.theme}${w.ai ? ' · AI' : ''}</span></span>`;
       if (!isUnlocked(w.n)) return `<li><div class="locked">${inner}<span class="status">Unlocks ${fmt(unlockDate(w.n))}</span></div></li>`;
@@ -202,7 +203,66 @@ function renderAbout() {
       <li>Use your own words. Leave out examples, quotations and repetition.</li>
       <li>Keep the logic visible with words such as <em>because</em>, <em>however</em> and <em>therefore</em>.</li>
     </ul>
+    <h3>Where the lessons come from</h3>
+    <p>Nothing is planned in advance. Claude reads the news several times a day: BBC News, The New York Times, The Economist, The Guardian, The Conversation, Aeon and Psyche. Every Sunday it writes the next lesson about the week's most interesting story, ready for Monday. Some New York Times and Economist links need a subscription.</p>
     <p>Your drafts and ticks are saved in this browser only.</p>`;
+}
+
+const REPO = 'khershlok/challenge-reading';
+
+function qaItem(a) {
+  return `
+    <div class="news-item qa">
+      <p class="kicker">Asked ${fmtIso(a.asked)}${a.about ? ` · about <em>${a.about}</em>` : ''}</p>
+      <h3>${a.question}</h3>
+      <div>${a.answer}</div>
+      ${a.sources && a.sources.length ? `<p class="source">Sources: ${a.sources.map(([l, u]) => `<a href="${u}" target="_blank" rel="noopener">${l}</a>`).join(' · ')}</p>` : ''}
+    </div>`;
+}
+
+function renderQuestions(about) {
+  const answers = (window.ANSWERS || []).slice().sort((a, b) => b.n - a.n);
+  app.innerHTML = `
+    <h1>Question bank</h1>
+    <p class="standfirst">Something in the news confusing? Ask here. Claude checks for new questions every hour during the day, and every answer is kept below.</p>
+    <div class="box">
+      <label class="task-q" for="q">Your question${about ? ` about <em>${about}</em>` : ''}</label>
+      <textarea id="q" placeholder="e.g. Why would the Atlantic currents collapsing make Britain colder, if the world is getting warmer?"></textarea>
+      <div class="done-row" style="margin-top:12px"><button id="askBtn">Send question</button></div>
+      <p class="source" style="margin-top:10px">This opens GitHub with your question filled in. Press <strong>Create</strong> to send it. Questions and answers are public, so don't include personal details.</p>
+    </div>
+    <div id="waiting"></div>
+    <h2>Answers</h2>
+    <input id="search" type="search" placeholder="Search answers…">
+    <div id="answers">${answers.length ? answers.map(qaItem).join('') : '<p>No answers yet. Ask the first question!</p>'}</div>`;
+
+  document.getElementById('askBtn').addEventListener('click', () => {
+    const q = document.getElementById('q').value.trim();
+    if (!q) return;
+    const body = q + (about ? `\n\nAbout: ${about}` : '');
+    const title = q.length > 90 ? q.slice(0, 87) + '…' : q;
+    window.open(`https://github.com/${REPO}/issues/new?labels=question&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`, '_blank', 'noopener');
+  });
+
+  document.getElementById('search').addEventListener('input', e => {
+    const t = e.target.value.toLowerCase();
+    document.getElementById('answers').innerHTML = answers
+      .filter(a => (a.question + a.answer + (a.about || '')).toLowerCase().includes(t))
+      .map(qaItem).join('') || '<p>No matching answers.</p>';
+  });
+
+  // Open questions that have not been answered yet come straight from GitHub.
+  fetch(`https://api.github.com/repos/${REPO}/issues?labels=question&state=open&per_page=30`)
+    .then(r => r.ok ? r.json() : [])
+    .then(list => {
+      const done = new Set(answers.map(a => a.n));
+      const waiting = list.filter(i => !done.has(i.number));
+      if (!waiting.length) return;
+      document.getElementById('waiting').innerHTML = `
+        <h3>Waiting for an answer</h3>
+        <ul>${waiting.map(i => `<li>${i.title.replace(/</g, '&lt;')} <span class="source-inline">asked ${fmt(new Date(i.created_at))}</span></li>`).join('')}</ul>`;
+    })
+    .catch(() => {});
 }
 
 function route() {
@@ -211,6 +271,7 @@ function route() {
   if (h === 'archive') renderArchive();
   else if (h === 'about') renderAbout();
   else if (h === 'news') renderNews();
+  else if (h.startsWith('questions')) renderQuestions(decodeURIComponent(h.slice(10)));
   else if (m) {
     const w = WEEKS.find(x => x.n === +m[1]);
     if (w && isUnlocked(w.n)) renderWeek(w); else renderArchive();
