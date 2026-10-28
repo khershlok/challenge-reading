@@ -45,6 +45,18 @@ function newsTeaser() {
     </div>`;
 }
 
+function nowBox(w) {
+  const items = (window.NOW || {})[w.n] || [];
+  if (!items.length) return '';
+  return `
+    <div class="box now-box">
+      <p class="kicker">Why this matters now</p>
+      ${items.map(it => `
+        <p><a href="${it.url}" target="_blank" rel="noopener"><strong>${it.title}</strong></a><br>
+        <span class="source-inline">${it.source} · ${fmtIso(it.date)}</span><br>${it.note}</p>`).join('')}
+    </div>`;
+}
+
 function newsItem(it) {
   const linked = WEEKS.find(w => w.n === it.week);
   return `
@@ -81,6 +93,7 @@ function renderWeek(w) {
     <p class="kicker">Week ${w.n} · ${fmt(unlockDate(w.n))} ${tags(w)}</p>
     <h1>${w.title}</h1>
     <p class="standfirst">${w.standfirst}</p>
+    ${nowBox(w)}
     ${w === currentWeek() ? newsTeaser() : ''}
     <article>${w.article}</article>
 
