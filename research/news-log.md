@@ -1,18 +1,18 @@
 # News log
 
-Stories gathered by the news-reading loop (several times a day). Every Sunday the next lesson is written from the past week's entries.
+Stories gathered by the news-reading loop (three times a day). Every Sunday the next lesson is written from the past week's entries.
 Each entry: date read · source · headline · link · one-line note on why it could make a good lesson (topic, debate, AI angle).
 
 ## 2026-10-29 07:00
 
 **BBC · Europe's youth take to the streets - they feel locked out of a promising future** · https://www.bbc.co.uk/news/articles/cm2ke80nd929o · 29 Oct 2026
-- What happened: Protests led mostly by young people (some under 18) have broken out at the same time in France, Italy, Spain, Portugal, Belgium, Greece, Serbia and Albania, over education, inequality and the cost of living. Most marches started peacefully but many ended in rioting and looting, and they are often organised on TikTok and Instagram.
+- What happened: Protests led mostly by young people (over half of those detained after clashes in Barcelona were under 18) have broken out in France, Belgium, Ireland, Spain, Portugal, Italy, Greece, Serbia and Albania, over education, inequality and the cost of living. Most marches started peacefully but many ended in rioting and looting, and they are often organised on TikTok and Instagram.
 - Big question: When young people feel shut out of politics, is street protest (even disruptive protest) a legitimate way to be heard? Essay: "Can violent protest ever be justified?" / "Should 16-year-olds be given the vote?"
 - Connections: Martin Luther King's "Letter from Birmingham Jail"; Thoreau on civil disobedience; Paris 1968 student revolt; Greek debt protests 2015. Same week: NYT Opinion "Europe Is Aflame, and It's Not Going to Stop" (29 Oct) reads the protests as "generational futility"; in Serbia the student movement has just won a general election (The Conversation, "Serbia's leaderless student movement has won a historic election – but what happens next?", https://theconversation.com/serbias-leaderless-student-movement-has-won-a-historic-election-but-what-happens-next-295268, 27 Oct: Student List 53.3% vs Vučić's party 39.7%). That makes a striking contrast between protest that wins at the ballot box and protest that turns to riot.
 - Tags: politics, democracy, protest, Europe [LESSON]
 
 **Guardian · Albania imposes $6,000 fine for demonstrators present at a protest that turns violent** · https://www.theguardian.com/world/2026/oct/29/albania-protest-attendance-fine-law · 29 Oct 2026
-- What happened: Albania's government has brought in fines of up to 500,000 leks (about €5,500, roughly six months' average pay) for anyone who stays in a crowd that turns violent or hides their face, even if they commit no violence themselves. Prime Minister Edi Rama, facing months of anti-corruption protests in Tirana (also reported in the BBC piece above), said he was inspired by a French bill making protesters liable for damage; parliament must approve the measures within 45 days.
+- What happened: Albania's government has brought in fines of up to 500,000 leks (about €5,500, six times the average monthly salary) for anyone who chooses to remain in a crowd that turns violent, even if they commit no violence themselves. Prime Minister Edi Rama, facing months of anti-corruption protests in Tirana (also reported in the BBC piece above), said he was inspired by a French bill making protesters liable for damage; parliament must approve the measures within 45 days.
 - Big question: Is it fair to punish someone for what the crowd around them does? Essay: "Should you be blamed for the actions of a group you belong to?"
 - Connections: collective vs individual responsibility; Mill's harm principle and freedom of assembly; Article 11 of the European Convention on Human Rights; UK debates over the Public Order Act 2023.
 - Tags: justice and law, protest, Europe
@@ -67,7 +67,7 @@ Each entry: date read · source · headline · link · one-line note on why it c
 
 **The Conversation · Scientists are growing human brain tissue in living mice – could this make their welfare harder to assess?** · https://theconversation.com/scientists-are-growing-human-brain-tissue-in-living-mice-could-this-make-their-welfare-harder-to-assess-293390 · 19 Oct 2026
 - What happened: Oxford ethicist Mackenzie Graham discusses a Nature study in which human brain "organoids" were transplanted into mice and wired into their nervous systems; the mice showed no change in behaviour or intelligence. Graham argues that human cells do not by themselves make a mouse matter more morally, but changing an animal's brain may make it harder to read its pain and wellbeing from its behaviour.
-- Big question: What makes a creature morally important – its species, its intelligence, or its ability to suffer? Essay: "Is it worse to be cruel to a dog than to a spider?" (a past Challenge question).
+- Big question: What makes a creature morally important – its species, its intelligence, or its ability to suffer? Essay: "Is it worse to be cruel to a dog than to a spider?" (a question from the Challenge specimen paper).
 - Connections: Bentham's "Can they suffer?"; Peter Singer on speciesism; Nagel's "What Is It Like to Be a Bat?"; Frankenstein; the 3Rs of animal research.
 - Tags: science and society, mind and consciousness, animal ethics [LESSON]
 

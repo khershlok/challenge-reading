@@ -89,6 +89,8 @@ ul.links li { margin: 4px 0; }
 .done-row { margin: 48px 0 0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-family: var(--sans); font-size: 0.9rem; }
 button { font-family: var(--sans); font-size: 0.9rem; font-weight: 600; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--bg); cursor: pointer; }
 button.secondary { background: transparent; color: var(--accent); }
+a.button { display: inline-block; font-family: var(--sans); font-size: 0.9rem; font-weight: 600; padding: 10px 16px; border-radius: 8px; background: var(--accent); color: var(--bg); text-decoration: none; }
+a.button.disabled { opacity: 0.5; }
 .week-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 32px; font-family: var(--sans); font-size: 0.9rem; }
 
 .week-list { list-style: none; padding: 0; margin: 0; }

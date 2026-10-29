@@ -23,6 +23,8 @@ function currentWeek() {
 function fmt(d) { return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); }
 function isDone(n) { return store('done-' + n) === '1'; }
 function words(s) { return (s.trim().match(/\S+/g) || []).length; }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
+function ext(url, label) { return `<a href="${url}" target="_blank" rel="noopener">${label}</a>`; }
 
 function tags(w) {
   return '<span class="tag">' + w.theme + '</span>' + (w.ai ? '<span class="tag ai">AI</span>' : '');
@@ -109,14 +111,14 @@ function renderWeek(w) {
 
     <div class="task">
       <p class="task-q">1. ${d.summaryQ} <span class="marks">[10]</span></p>
-      <textarea id="sum" placeholder="Your summary, in your own words…"></textarea>
+      <textarea id="sum" aria-label="Your summary" placeholder="Your summary, in your own words…"></textarea>
       <div class="counter" id="sumCount">0 / 75 words</div>
       <details><summary>Show a model summary</summary><p>${d.model} <span class="marks">(${words(d.model)} words)</span></p></details>
     </div>
 
     <div class="task">
       <p class="task-q">2. ${d.paraQ} <span class="marks">[15]</span></p>
-      <textarea id="para" placeholder="One paragraph, about half a side…"></textarea>
+      <textarea id="para" aria-label="Your paragraph" placeholder="One paragraph, about half a side…"></textarea>
       <div class="counter" id="paraCount">0 words</div>
       <details><summary>Ideas to get you started</summary><ul>${d.tips.map(t => `<li>${t}</li>`).join('')}</ul></details>
     </div>
@@ -213,8 +215,8 @@ const REPO = 'khershlok/challenge-reading';
 function qaItem(a) {
   return `
     <div class="news-item qa">
-      <p class="kicker">Asked ${fmtIso(a.asked)}${a.about ? ` · about <em>${a.about}</em>` : ''}</p>
-      <h3>${a.question}</h3>
+      <p class="kicker">Asked ${fmtIso(a.asked)}${a.about ? ` · about <em>${esc(a.about)}</em>` : ''}</p>
+      <h3>${esc(a.question)}</h3>
       <div>${a.answer}</div>
       ${a.sources && a.sources.length ? `<p class="source">Sources: ${a.sources.map(([l, u]) => `<a href="${u}" target="_blank" rel="noopener">${l}</a>`).join(' · ')}</p>` : ''}
     </div>`;
@@ -226,9 +228,9 @@ function renderQuestions(about) {
     <h1>Question bank</h1>
     <p class="standfirst">Something in the news confusing? Ask here. Claude checks for new questions three times a day (7:30am, 2:30pm and 9:30pm), and every answer is kept below.</p>
     <div class="box">
-      <label class="task-q" for="q">Your question${about ? ` about <em>${about}</em>` : ''}</label>
+      <label class="task-q" for="q">Your question${about ? ` about <em>${esc(about)}</em>` : ''}</label>
       <textarea id="q" placeholder="e.g. Why would the Atlantic currents collapsing make Britain colder, if the world is getting warmer?"></textarea>
-      <div class="done-row" style="margin-top:12px"><button id="askBtn">Send question</button></div>
+      <div class="done-row" style="margin-top:12px"><a id="askBtn" class="button" target="_blank" rel="noopener" href="#questions">Send question</a></div>
       <p class="source" style="margin-top:10px">This opens GitHub with your question filled in. Press <strong>Create</strong> to send it. Questions and answers are public, so don't include personal details.</p>
     </div>
     <div id="waiting"></div>
@@ -236,13 +238,19 @@ function renderQuestions(about) {
     <input id="search" type="search" placeholder="Search answers…">
     <div id="answers">${answers.length ? answers.map(qaItem).join('') : '<p>No answers yet. Ask the first question!</p>'}</div>`;
 
-  document.getElementById('askBtn').addEventListener('click', () => {
-    const q = document.getElementById('q').value.trim();
-    if (!q) return;
+  // A real link (not window.open) so pop-up blockers never stop it.
+  const qBox = document.getElementById('q');
+  const askBtn = document.getElementById('askBtn');
+  const updateAsk = () => {
+    const q = qBox.value.trim();
     const body = q + (about ? `\n\nAbout: ${about}` : '');
     const title = q.length > 90 ? q.slice(0, 87) + '…' : q;
-    window.open(`https://github.com/${REPO}/issues/new?labels=question&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`, '_blank', 'noopener');
-  });
+    askBtn.href = `https://github.com/${REPO}/issues/new?labels=question&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+    askBtn.classList.toggle('disabled', !q);
+  };
+  qBox.addEventListener('input', updateAsk);
+  askBtn.addEventListener('click', e => { if (!qBox.value.trim()) { e.preventDefault(); qBox.focus(); } });
+  updateAsk();
 
   document.getElementById('search').addEventListener('input', e => {
     const t = e.target.value.toLowerCase();
@@ -260,9 +268,82 @@ function renderQuestions(about) {
       if (!waiting.length) return;
       document.getElementById('waiting').innerHTML = `
         <h3>Waiting for an answer</h3>
-        <ul>${waiting.map(i => `<li>${i.title.replace(/</g, '&lt;')} <span class="source-inline">asked ${fmt(new Date(i.created_at))}</span></li>`).join('')}</ul>`;
+        <ul>${waiting.map(i => `<li>${esc(i.title)} <span class="source-inline">asked ${fmt(new Date(i.created_at))}</span></li>`).join('')}</ul>`;
     })
     .catch(() => {});
+}
+
+const OUTLETS = [
+  ['BBC News', 'https://www.bbc.co.uk/news', 'free'],
+  ['The New York Times', 'https://www.nytimes.com', 'most articles need a subscription'],
+  ['The Economist', 'https://www.economist.com', 'most articles need a subscription'],
+  ['The Guardian', 'https://www.theguardian.com/uk', 'free'],
+  ['The Conversation UK', 'https://theconversation.com/uk', 'free, written by academics'],
+  ['Aeon', 'https://aeon.co', 'free long essays'],
+  ['Psyche', 'https://psyche.co', 'free essays']
+];
+
+function li(url, label, meta) {
+  return `<li>${ext(url, label)}${meta ? ` <span class="source-inline">${meta}</span>` : ''}</li>`;
+}
+
+// Turns the news log's "**Source · Headline** · URL · date" lines into links, newest session first.
+function parseLog(text) {
+  const sessions = [];
+  text.split('\n').forEach(line => {
+    const h = line.match(/^## (.+)/);
+    if (h) { sessions.push({ when: h[1].trim(), items: [] }); return; }
+    const m = line.match(/^\*\*(.+?) · (.+?)\*\*(.*?) · (https?:\/\/\S+) · (.+)$/);
+    if (m && sessions.length) sessions[sessions.length - 1].items.push({ source: m[1], title: m[2] + m[3], url: m[4], date: m[5] });
+  });
+  return sessions.filter(s => s.items.length).reverse();
+}
+
+function renderSources() {
+  const weeks = WEEKS.filter(w => isUnlocked(w.n));
+  const answers = window.ANSWERS || [];
+  app.innerHTML = `
+    <h1>Sources</h1>
+    <p class="standfirst">Every article this site uses, with a link to the original. The summaries here are in our own words, so read the original before quoting it.</p>
+
+    <h2>Where the news comes from</h2>
+    <ul class="links">${OUTLETS.map(([n, u, m]) => li(u, n, m)).join('')}</ul>
+
+    <h2>Weekly lessons</h2>
+    ${weeks.map(w => {
+      const inText = [...new DOMParser().parseFromString(w.article, 'text/html').querySelectorAll('a')];
+      const now = (window.NOW || {})[w.n] || [];
+      return `
+        <h3>Week ${w.n}: <a href="#week-${w.n}">${w.title}</a></h3>
+        ${now.length ? `<p class="source">Why this matters now</p><ul class="links">${now.map(it => li(it.url, it.title, `${it.source} · ${fmtIso(it.date)}`)).join('')}</ul>` : ''}
+        ${inText.length ? `<p class="source">Facts in the article</p><ul class="links">${inText.map(a => li(a.href, esc(a.textContent))).join('')}</ul>` : ''}
+        <p class="source">Go further</p><ul class="links">${w.links.map(([l, u]) => li(u, l)).join('')}</ul>`;
+    }).join('')}
+
+    <h2>In the news</h2>
+    ${NEWS.map(i => `
+      <h3>Week of ${fmtIso(i.weekOf)}</h3>
+      <ul class="links">${i.items.map(it => li(it.url, it.title, `${it.source} · ${it.author} · ${fmtIso(it.date)}`)).join('')}</ul>`).join('')}
+
+    <h2>Question bank</h2>
+    ${answers.length ? answers.map(a => `
+      <h3>${esc(a.question)}</h3>
+      <ul class="links">${(a.sources || []).map(([l, u]) => li(u, l)).join('')}</ul>`).join('') : '<p>No questions answered yet.</p>'}
+
+    <h2>Everything Claude has read</h2>
+    <p>The news-reading loop logs the most useful stories it reads three times a day. The full notes are in the ${ext(`https://github.com/${REPO}/blob/main/research/news-log.md`, 'news log')}.</p>
+    <div id="logList"><p class="source">Loading…</p></div>`;
+
+  fetch('research/news-log.md', { cache: 'no-cache' })
+    .then(r => r.ok ? r.text() : Promise.reject())
+    .then(text => {
+      const sessions = parseLog(text);
+      document.getElementById('logList').innerHTML = sessions.length ? sessions.map(s => `
+        <details><summary>${esc(s.when)} · ${s.items.length} stories</summary>
+          <ul class="links">${s.items.map(it => li(it.url, esc(it.title), `${esc(it.source)} · ${esc(it.date)}`)).join('')}</ul>
+        </details>`).join('') : '<p>Nothing logged yet.</p>';
+    })
+    .catch(() => { document.getElementById('logList').innerHTML = '<p>The news log could not be loaded. Use the link above.</p>'; });
 }
 
 function route() {
@@ -271,7 +352,12 @@ function route() {
   if (h === 'archive') renderArchive();
   else if (h === 'about') renderAbout();
   else if (h === 'news') renderNews();
-  else if (h.startsWith('questions')) renderQuestions(decodeURIComponent(h.slice(10)));
+  else if (h === 'sources') renderSources();
+  else if (h.startsWith('questions')) {
+    let about = '';
+    try { about = decodeURIComponent(h.slice(10)); } catch (e) {}
+    renderQuestions(about);
+  }
   else if (m) {
     const w = WEEKS.find(x => x.n === +m[1]);
     if (w && isUnlocked(w.n)) renderWeek(w); else renderArchive();

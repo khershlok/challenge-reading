@@ -7,15 +7,15 @@ window.WEEKS.push({
   ai: true,
   standfirst: "If any photo, video or voice can be faked, how can we know anything we did not see with our own eyes?",
   article: `
-<p>In January 2024, voters in New Hampshire picked up the phone and heard President Joe Biden telling them not to vote in a primary election. It was not Biden. It was a cloned voice, made with cheap software. Around the same time, a finance worker in Hong Kong paid about $25 million to fraudsters after a video call with his "chief financial officer" and several "colleagues". Every one of them was a deepfake.</p>
+<p>In January 2024, voters in New Hampshire picked up the phone and heard President Joe Biden telling them not to vote in a primary election. It was not Biden. It was a cloned voice, made with cheap software (<a href="https://www.nbcnews.com/politics/2024-election/fake-joe-biden-robocall-tells-new-hampshire-democrats-not-vote-tuesday-rcna134984" target="_blank" rel="noopener">NBC News</a>). Weeks later, police in Hong Kong reported that a finance worker had paid about $25 million to fraudsters after a video call with the company's "chief financial officer" and several "colleagues". Every one of them was a deepfake (<a href="https://edition.cnn.com/2024/02/04/asia/deepfake-cfo-scam-hong-kong-intl-hnk/index.html" target="_blank" rel="noopener">CNN</a>).</p>
 <p>These stories are alarming, but the deeper problem is not that we will be fooled by fakes. It is that we may stop believing anything at all.</p>
 
 <h3>We have always relied on others</h3>
 <p>Think about how much of what you "know" you have checked yourself. You believe Australia exists, that the Earth goes round the Sun, that you were born on a certain date. Almost none of this comes from your own observation. It comes from <em>testimony</em>: from parents, teachers, books and news reports. Philosophers have long argued about whether this is a problem. The Scottish philosopher David Hume thought we should trust testimony only as far as experience shows that witnesses are reliable. Others, such as Thomas Reid, argued that trust is our natural starting point, and that without it human knowledge would collapse.</p>
-<p>Photographs and videos seemed to offer a way out of this dependence. A camera does not have opinions. For most of the twentieth century, a photo was treated as evidence in a way that a written account never was. AI has ended that. A picture now proves only that someone made a picture.</p>
+<p>Photographs and videos seemed to offer a way out of this dependence. A camera does not have opinions. For most of the twentieth century, people trusted a photo as evidence far more readily than a written account. AI has ended that. A picture now proves only that someone made a picture.</p>
 
 <h3>The liar's dividend</h3>
-<p>In 2019 two American law professors, Robert Chesney and Danielle Citron, named a strange side effect of deepfakes: the <strong>liar's dividend</strong>. Once everyone knows that video can be faked, anyone caught on a real video can simply say, "That's AI." The fakes do damage, but so does the doubt they create about everything genuine. A world in which nothing can be proved is very convenient for the powerful.</p>
+<p>In 2019 two American law professors, Robert Chesney and Danielle Citron, named a strange side effect of deepfakes: the <strong>liar's dividend</strong> (<a href="https://www.californialawreview.org/print/deep-fakes-a-looming-challenge-for-privacy-democracy-and-national-security" target="_blank" rel="noopener">their paper</a>). Once everyone knows that video can be faked, anyone caught on a real video can simply say, "That's AI." The fakes do damage, but so does the doubt they create about everything genuine. A world in which nothing can be proved is very convenient for the powerful.</p>
 <p>This links to one of the oldest stories in philosophy. In Plato's <em>Republic</em>, prisoners are chained in a cave, watching shadows on a wall. They take the shadows for reality because they have never seen anything else. Plato's point was that most people mistake appearances for truth. Our screens can look like a cave wall: a constant show of images, some real and some not, chosen for us by algorithms that care about our attention rather than our understanding.</p>
 
 <h3>So how do we decide what is true?</h3>
@@ -26,7 +26,7 @@ window.WEEKS.push({
 <li><strong>Method:</strong> checking sources against each other and asking who benefits from a claim. This is what historians do with ancient documents, which were also often forged.</li>
 <li><strong>Character:</strong> perhaps truth depends on honest people as much as on clever tools. A society where people value accuracy, admit mistakes and correct themselves is harder to fool.</li>
 </ul>
-<p>Pope Leo XIV made a version of this last argument in 2026: truth is "relational", built through trust between people, not imposed by machines or by powerful companies. A sceptic might reply that this is too hopeful. Trust can be manipulated too, and communities can share false beliefs as easily as true ones.</p>
+<p>Pope Leo XIV made a version of this last argument in <em>Magnifica Humanitas</em>, his first encyclical, published in May 2026. It is the text used in the Challenge specimen paper. In it, truth is "relational", built through trust between people, not imposed by machines or by powerful companies. A sceptic might reply that this is too hopeful. Trust can be manipulated too, and communities can share false beliefs as easily as true ones.</p>
 
 <h3>What to think about</h3>
 <p>Is the real danger of AI that it lies, or that it makes us lazy about checking? Was the age of trusted photographs really an age of truth, or did people simply not notice the ways images were already staged and cropped? And is it worse to believe a falsehood, or to believe nothing at all?</p>
@@ -53,7 +53,7 @@ window.WEEKS.push({
   essays: [
     { q: "Should it be illegal to make a deepfake of a real person?", points: [
       "Distinguish uses: satire and comedy, fraud, election interference, abuse.",
-      "Free expression vs harm (look ahead to Mill in Week 6).",
+      "Free expression vs harm: J. S. Mill's 'harm principle' says freedom may be limited only to prevent harm to others.",
       "Could a law be enforced against anonymous creators abroad?",
       "Is the harm in making it, or in sharing it?"
     ]},
@@ -70,6 +70,7 @@ window.WEEKS.push({
   ],
   interview: "Be ready to answer: 'You say we should check sources. But you can't check everything. So whom do you trust, and why?' Have one concrete example of a source you trust and your reason.",
   links: [
+    ["Pope Leo XIV's first encyclical, Magnifica Humanitas (Vatican News)", "https://www.vaticannews.va/en/pope/news/2026-05/pope-leo-xiv-first-encyclical-magnifica-humanitas.html"],
     ["Allegory of the cave (Wikipedia)", "https://en.wikipedia.org/wiki/Allegory_of_the_cave"],
     ["Deepfake (Wikipedia)", "https://en.wikipedia.org/wiki/Deepfake"],
     ["Epistemological problems of testimony (Stanford Encyclopedia of Philosophy)", "https://plato.stanford.edu/entries/testimony-episprob/"],
