@@ -288,7 +288,8 @@ const TUTOR_MODEL = 'gemini-3.8-flash';
 const tutorPanel = document.getElementById('tutor-panel');
 const tutorBody = document.getElementById('tutor-body');
 const tutorBtn = document.getElementById('tutor-btn');
-let tutorHistory = [];
+let tutorHistory = []; // what is shown in the panel: { role, text }
+let tutorLastId = null; // Google keeps the conversation; each reply continues from the previous interaction
 
 function plain(html) { return new DOMParser().parseFromString(html, 'text/html').body.textContent.trim(); }
 
@@ -369,7 +370,7 @@ function renderTutor() {
 
   const sendBtn = document.getElementById('send-btn');
   const userInput = document.getElementById('user-input');
-  tutorHistory.forEach(m => tutorMessage(m.role, m.role === 'user' ? esc(m.parts[0].text).replace(/\n/g, '<br>') : tutorFormat(m.parts[0].text)));
+  tutorHistory.forEach(m => tutorMessage(m.role, m.role === 'user' ? esc(m.text).replace(/\n/g, '<br>') : tutorFormat(m.text)));
 
   async function handleUserQuery() {
     const question = userInput.value.trim();
@@ -378,18 +379,26 @@ function renderTutor() {
     userInput.value = '';
     sendBtn.disabled = true;
     const reply = tutorMessage('model', '<p class="source">Thinking…</p>');
-    const contents = [...tutorHistory, { role: 'user', parts: [{ text: question }] }];
     try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TUTOR_MODEL}:generateContent`, {
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify({ systemInstruction: { parts: [{ text: tutorPrompt() }] }, contents })
+        body: JSON.stringify({
+          model: TUTOR_MODEL,
+          system_instruction: tutorPrompt(),
+          input: question,
+          ...(tutorLastId ? { previous_interaction_id: tutorLastId } : {})
+        })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || res.statusText);
-      const text = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+      const body = await res.json();
+      const data = Array.isArray(body) ? body[0] : body; // errors sometimes come wrapped in a list
+      if (!res.ok) throw new Error(data?.error?.message || res.statusText);
+      // The reply text is in the "model_output" steps.
+      const text = (data.steps || []).filter(s => s.type === 'model_output')
+        .flatMap(s => s.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
       if (!text) throw new Error("Sorry, I couldn't generate a response right now.");
-      tutorHistory = [...contents, { role: 'model', parts: [{ text }] }];
+      tutorLastId = data.id;
+      tutorHistory.push({ role: 'user', text: question }, { role: 'model', text });
       reply.innerHTML = tutorFormat(text);
     } catch (err) {
       console.error('Error fetching AI response:', err);
@@ -406,7 +415,7 @@ function renderTutor() {
   userInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleUserQuery(); }
   });
-  document.getElementById('clear-btn').addEventListener('click', () => { tutorHistory = []; renderTutor(); });
+  document.getElementById('clear-btn').addEventListener('click', () => { tutorHistory = []; tutorLastId = null; renderTutor(); });
   document.getElementById('forget-key').addEventListener('click', e => {
     e.preventDefault();
     try { localStorage.removeItem('gemini-key'); } catch (err) {}
