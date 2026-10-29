@@ -353,22 +353,135 @@ const TUTOR_URL = 'https://claude.ai/artifact/UdFGuYoeqm9B61HGsYYpYG';
 
 function renderTutor() {
   app.innerHTML = `
-    <h1>AI tutor</h1>
-    <p class="standfirst">Challenge Tutor runs on Claude. It knows this week's lesson and the checked news stories on this site, and it coaches you rather than writing answers for you.</p>
-    <div class="done-row" style="margin-top:0"><a class="button" href="${TUTOR_URL}" target="_blank" rel="noopener">Open Challenge Tutor</a></div>
-    <h3>What it can do</h3>
-    <ul>
-      <li><strong>Explain the news:</strong> ask about anything in this week's lesson or news.</li>
-      <li><strong>Mark my summary:</strong> it counts your words and marks your Part A summary out of 10, with what to fix.</li>
-      <li><strong>Mark my writing:</strong> an indicative mark for a Part A paragraph (out of 15) or a Part B essay (out of 25), with ways to improve.</li>
-      <li><strong>Practise the interview:</strong> it asks one question at a time and follows up on your answers, then gives feedback.</li>
-    </ul>
-    <h3>Good to know</h3>
-    <ul>
-      <li>It opens on claude.ai, and you need to be signed in to Claude. The first time, Claude asks you to allow the page. Answers use your Claude usage.</li>
-      <li>It does not search the web. Its news is refreshed every Sunday with the new lesson. For anything newer, use the <a href="#questions">Question bank</a>.</li>
-      <li>It can make mistakes, so check facts on the <a href="#sources">Sources page</a>.</li>
-    </ul>`;
+    <h1>AI tutors</h1>
+    <p class="standfirst">There are two AI tutors. Both can make mistakes, so check facts on the <a href="#sources">Sources page</a>.</p>
+
+    <div class="box">
+      <p class="kicker">Runs on Claude · opens on claude.ai</p>
+      <h3 style="margin-top:0">Challenge Tutor</h3>
+      <p>Knows this week's lesson and the checked news stories on this site, and coaches you rather than writing answers for you. It has four modes:</p>
+      <ul>
+        <li><strong>Explain the news:</strong> ask about anything in this week's lesson or news.</li>
+        <li><strong>Mark my summary:</strong> counts your words and marks your Part A summary out of 10.</li>
+        <li><strong>Mark my writing:</strong> an indicative mark for a Part A paragraph (out of 15) or a Part B essay (out of 25).</li>
+        <li><strong>Practise the interview:</strong> one question at a time, with follow-ups and feedback.</li>
+      </ul>
+      <p class="source">You need to be signed in to Claude. The first time, Claude asks you to allow the page, and answers use your Claude usage. Its news is refreshed every Sunday; for anything newer, use the <a href="#questions">Question bank</a>.</p>
+      <div class="done-row" style="margin-top:12px"><a class="button" href="${TUTOR_URL}" target="_blank" rel="noopener">Open Challenge Tutor</a></div>
+    </div>
+
+    <div class="box">
+      <p class="kicker">Runs on Google Gemini · works on this site</p>
+      <h3 style="margin-top:0">Gemini tutor</h3>
+      <p>A general chat tutor for questions about anything you're reading, or for trying out an argument. It needs a free Gemini API key from Google, which is saved in your browser only.</p>
+      <div class="done-row" style="margin-top:12px"><a class="button" href="#gemini">Open Gemini tutor</a></div>
+    </div>`;
+}
+
+// The site is public, so the Gemini key is never in the code: each visitor pastes their own, kept in their browser only.
+const TUTOR_MODEL = 'gemini-2.5-flash';
+const TUTOR_PROMPT = 'You are an expert academic tutor helping a student prepare for the General Paper of The Challenge exam at Westminster School. Answer the student\'s questions concisely, thoughtfully, and critically.';
+let tutorHistory = [];
+
+// Gemini replies in Markdown; show paragraphs, lists and bold without trusting any HTML in it.
+function tutorFormat(text) {
+  return esc(text).split(/\n{2,}/).map(block => {
+    const b = block.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/(^|\s)\*(\S.*?)\*/g, '$1<em>$2</em>');
+    const lines = b.split('\n');
+    if (lines.every(l => /^\s*([-*]|\d+\.)\s+/.test(l))) {
+      const tag = /^\s*\d+\./.test(lines[0]) ? 'ol' : 'ul';
+      return `<${tag}>${lines.map(l => `<li>${l.replace(/^\s*([-*]|\d+\.)\s+/, '')}</li>`).join('')}</${tag}>`;
+    }
+    return `<p>${b.replace(/^#+\s*/, '').replace(/\n/g, '<br>')}</p>`;
+  }).join('');
+}
+
+function tutorMessage(role, html) {
+  const div = document.createElement('div');
+  div.className = 'chat-message ' + (role === 'user' ? 'user-message' : 'ai-message');
+  div.innerHTML = `<p class="kicker">${role === 'user' ? 'You' : 'AI tutor'}</p><div class="chat-body">${html}</div>`;
+  const win = document.getElementById('chat-window');
+  win.appendChild(div);
+  win.scrollTop = win.scrollHeight;
+  return div.querySelector('.chat-body');
+}
+
+function renderGemini() {
+  const key = store('gemini-key');
+  app.innerHTML = `
+    <p class="source"><a href="#tutor">← Both AI tutors</a></p>
+    <h1>Gemini tutor</h1>
+    <p class="standfirst">Ask about anything you're reading, or try out an argument before you write it. The tutor is an AI (Google Gemini), so check what it tells you.</p>
+    ${key ? `
+      <div id="chat-window" class="chat-window"></div>
+      <div class="chat-input">
+        <textarea id="user-input" aria-label="Your question" placeholder="e.g. What is the strongest objection to this week's argument?"></textarea>
+        <div class="done-row" style="margin-top:12px">
+          <button id="send-btn">Send</button>
+          <button id="clear-btn" class="secondary">New conversation</button>
+        </div>
+      </div>
+      <p class="source" style="margin-top:16px">Your Gemini key is saved in this browser only. <a href="#gemini" id="forget-key">Remove it</a></p>` : `
+      <div class="box">
+        <label class="task-q" for="key">Paste your Gemini API key to start</label>
+        <input id="key" type="password" class="key-input" autocomplete="off" placeholder="Gemini API key">
+        <div class="done-row" style="margin-top:12px"><button id="save-key">Save key</button></div>
+        <p class="source" style="margin-top:10px">Get a free key from ${ext('https://aistudio.google.com/apikey', 'Google AI Studio')}. It is saved in this browser only and is sent only to Google.</p>
+      </div>`}`;
+
+  if (!key) {
+    document.getElementById('save-key').addEventListener('click', () => {
+      const k = document.getElementById('key').value.trim();
+      if (k) { store('gemini-key', k); renderGemini(); }
+    });
+    return;
+  }
+
+  const sendBtn = document.getElementById('send-btn');
+  const userInput = document.getElementById('user-input');
+  tutorHistory.forEach(m => tutorMessage(m.role, m.role === 'user' ? esc(m.parts[0].text).replace(/\n/g, '<br>') : tutorFormat(m.parts[0].text)));
+
+  async function handleUserQuery() {
+    const question = userInput.value.trim();
+    if (!question || sendBtn.disabled) return;
+    tutorMessage('user', esc(question).replace(/\n/g, '<br>'));
+    userInput.value = '';
+    sendBtn.disabled = true;
+    const reply = tutorMessage('model', '<p class="source">Thinking…</p>');
+    const contents = [...tutorHistory, { role: 'user', parts: [{ text: question }] }];
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TUTOR_MODEL}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify({ systemInstruction: { parts: [{ text: TUTOR_PROMPT }] }, contents })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || res.statusText);
+      const text = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+      if (!text) throw new Error("Sorry, I couldn't generate a response right now.");
+      tutorHistory = [...contents, { role: 'model', parts: [{ text }] }];
+      reply.innerHTML = tutorFormat(text);
+    } catch (err) {
+      console.error('Error fetching AI response:', err);
+      reply.innerHTML = `<p class="source">${esc(err.message || 'An error occurred while connecting to the AI.')}</p>`;
+    } finally {
+      sendBtn.disabled = false;
+      userInput.focus();
+    }
+    const win = document.getElementById('chat-window');
+    if (win) win.scrollTop = win.scrollHeight;
+  }
+
+  sendBtn.addEventListener('click', handleUserQuery);
+  userInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleUserQuery(); }
+  });
+  document.getElementById('clear-btn').addEventListener('click', () => { tutorHistory = []; renderGemini(); });
+  document.getElementById('forget-key').addEventListener('click', e => {
+    e.preventDefault();
+    try { localStorage.removeItem('gemini-key'); } catch (err) {}
+    renderGemini();
+  });
 }
 
 function route() {
@@ -379,6 +492,7 @@ function route() {
   else if (h === 'news') renderNews();
   else if (h === 'sources') renderSources();
   else if (h === 'tutor') renderTutor();
+  else if (h === 'gemini') renderGemini();
   else if (h.startsWith('questions')) {
     let about = '';
     try { about = decodeURIComponent(h.slice(10)); } catch (e) {}

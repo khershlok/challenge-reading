@@ -122,6 +122,19 @@ input[type="search"] { width: 100%; font-family: var(--sans); font-size: 0.95rem
 .news-q { background: var(--accent-soft); padding: 10px 14px; border-radius: 8px; }
 nav { flex-wrap: wrap; row-gap: 4px; }
 
+.chat-window { max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+.chat-window:empty { display: none; }
+.chat-message { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; background: var(--surface); font-size: 1rem; }
+.chat-message.user-message { background: var(--accent-soft); border-color: transparent; margin-left: 15%; }
+.chat-message.ai-message { border-left: 4px solid var(--ai); margin-right: 5%; }
+.chat-message .kicker { margin-bottom: 4px; }
+.chat-message.ai-message .kicker { color: var(--ai); font-weight: 600; }
+.chat-body > :first-child { margin-top: 0; }
+.chat-body > :last-child { margin-bottom: 0; }
+.chat-input textarea { min-height: 90px; }
+button:disabled { opacity: 0.5; cursor: default; }
+.key-input { width: 100%; font-family: var(--sans); font-size: 0.95rem; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); margin-top: 6px; }
+
 @media (max-width: 560px) {
   body { font-size: 17px; }
   h1 { font-size: 1.8rem; }
