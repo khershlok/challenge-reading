@@ -18,13 +18,21 @@
       <a href="#">This week</a>
       <a href="#news">In the news</a>
       <a href="#questions">Ask a question</a>
-      <a href="#tutor">AI tutor</a>
       <a href="#archive">All weeks</a>
       <a href="#sources">Sources</a>
       <a href="#about">How to use</a>
     </nav>
+    <button id="tutor-btn" class="tutor-btn" aria-controls="tutor-panel" aria-expanded="false">AI tutor</button>
   </div>
 </header>
+<!-- The tutor sits outside #app so the conversation stays open while you move between pages. -->
+<aside id="tutor-panel" class="tutor-panel" aria-label="AI tutor" hidden>
+  <div class="tutor-head">
+    <strong>AI tutor</strong>
+    <button id="tutor-close" class="secondary" aria-label="Close the tutor">Close</button>
+  </div>
+  <div id="tutor-body" class="tutor-body"></div>
+</aside>
 <main id="app" class="wrap"></main>
 <footer class="site-footer">
   <div class="wrap">A new week arrives every Monday. Preparation for the General paper of The Challenge at Westminster School (first examination 2027).</div>
