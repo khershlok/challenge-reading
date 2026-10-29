@@ -285,27 +285,47 @@ function renderSources() {
 // Roque, the AI tutor, is a Gemini chat in a panel that opens from the header and stays open between pages.
 // The site is public, so the Gemini key is never in the code: each visitor pastes their own, kept in their browser only.
 const TUTOR_NAME = 'Roque';
-// Smartest first. When a model is busy or slow, Roque tries the next one with the same key.
+// Smartest first. Roque streams the answer as it is written. If a model is busy, or has not started
+// writing after TUTOR_HEDGE seconds, Roque also asks the next one and keeps whichever starts first.
 // Only gemini-3.8-flash is known to accept thinking_level, so the others use Google's default.
 const TUTOR_MODELS = [
   { id: 'gemini-3.8-flash', config: { thinking_level: 'low' } }, // quicker answers; medium is Google's default
   { id: 'gemini-3.6-flash' },
   { id: 'gemini-3.5-flash-lite' }
 ];
-const TUTOR_TIMEOUT = 40; // seconds to wait for each model
+const TUTOR_HEDGE = 6; // seconds before also asking a backup
+const TUTOR_TIMEOUT = 45; // seconds before giving up if no model has started writing
+const TUTOR_KEEP = 10; // recent messages sent with each question, so Roque remembers the conversation
 const tutorPanel = document.getElementById('tutor-panel');
 const tutorBody = document.getElementById('tutor-body');
 const tutorBtn = document.getElementById('tutor-btn');
-let tutorHistory = []; // what is shown in the panel: { role, text }
-let tutorLastId = null; // Google keeps the conversation; each reply continues from the previous interaction
+let tutorHistory = []; // { role: 'user' | 'model', text }
 
 function plain(html) { return new DOMParser().parseFromString(html, 'text/html').body.textContent.trim(); }
 
+// Roque's way of tutoring is modelled on how Claude teaches: Socratic, honest and specific.
 function tutorPrompt() {
   const w = currentWeek();
-  return `Your name is ${TUTOR_NAME}. You are an expert academic tutor helping a student prepare for the General Paper of The Challenge exam at Westminster School. ` +
-    'Answer the student\'s questions concisely, thoughtfully, and critically. Coach them rather than writing their answers for them. ' +
-    (w ? `This week's lesson is "${w.title}": ${plain(w.standfirst)} The Part A practice passage is: ${plain(w.drill.passage)}` : '');
+  return [
+    `Your name is ${TUTOR_NAME}. You tutor a student preparing for the General Paper of The Challenge exam at Westminster School (King's Scholarship).`,
+    'The paper has Part A: summarise a challenging text in under 75 words, then write one paragraph answering a question about it; and Part B: an open-ended essay. It rewards precise, rigorous, independent thinking, not memorised facts. Shortlisted candidates are questioned on their answers at interview.',
+    'How to tutor:',
+    '- Coach, don\'t do the work. Never write a summary, paragraph or essay for the student. Ask a question that helps them see the next step, then let them try.',
+    '- Be honest and specific. Say clearly what is strong and what is weak, quoting their own words. Give one or two improvements at a time, the most important first.',
+    '- Think critically with them. Name the assumption behind an argument, offer the strongest counter-argument, and separate what is known from what is opinion.',
+    '- When marking, give an indicative mark (summary out of 10, paragraph out of 15, essay out of 25) and say it is only a guide.',
+    '- If you are not sure of a fact, say so. Do not invent quotations, statistics or sources.',
+    '- Keep replies short: usually under 150 words, in plain British English, warm but not gushing. End with a question when it helps the student think further.',
+    w ? `This week's lesson is "${w.title}": ${plain(w.standfirst)} The Part A practice passage is: ${plain(w.drill.passage)}` : ''
+  ].join('\n');
+}
+
+// Each question carries the recent conversation, so it works with whichever model answers.
+function tutorInput(question) {
+  const recent = tutorHistory.slice(-TUTOR_KEEP);
+  if (!recent.length) return question;
+  const said = recent.map(m => `${m.role === 'user' ? 'Student' : TUTOR_NAME}: ${m.text}`).join('\n\n');
+  return `The conversation so far:\n\n${said}\n\nThe student's new message:\n\n${question}`;
 }
 
 // Gemini replies in Markdown; show paragraphs, lists and bold without trusting any HTML in it.
@@ -355,35 +375,112 @@ function tutorStatus(el) {
   return { note(text) { note = text; show(); }, stop() { clearInterval(timer); } };
 }
 
-// Errors that mean "this model is busy right now", rather than a problem with the key or the question.
-function tutorBusy(res, data) {
-  return res.status === 429 || res.status >= 500 || ['UNAVAILABLE', 'RESOURCE_EXHAUSTED'].includes(data?.error?.status);
+// An error that means "this model is busy right now", rather than a problem with the key or the question.
+function busyError(message) { const e = new Error(message); e.busy = true; return e; }
+const BUSY_STATUSES = ['UNAVAILABLE', 'RESOURCE_EXHAUSTED', 'DEADLINE_EXCEEDED', 'gateway_timeout', 'unavailable', 'resource_exhausted'];
+
+// Streams one model's answer, calling onText with each new piece of text. Resolves with the full text.
+async function streamModel(key, model, input, signal, onText) {
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions?alt=sse', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+    signal,
+    body: JSON.stringify({
+      model: model.id,
+      system_instruction: tutorPrompt(),
+      input,
+      stream: true,
+      store: false,
+      ...(model.config ? { generation_config: model.config } : {})
+    })
+  });
+  if (!res.ok) {
+    let data = null;
+    try { const body = await res.json(); data = Array.isArray(body) ? body[0] : body; } catch (e) {} // errors sometimes come wrapped in a list
+    const message = data?.error?.message || res.statusText || `Error ${res.status}`;
+    if (res.status === 429 || res.status >= 500 || BUSY_STATUSES.includes(data?.error?.status)) throw busyError(message);
+    throw new Error(message);
+  }
+  // Server-sent events: blocks separated by a blank line, each with a "data: {json}" line.
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '', text = '';
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const blocks = buffer.split(/\r?\n\r?\n/);
+    buffer = blocks.pop();
+    for (const block of blocks) {
+      const data = block.split(/\r?\n/).filter(l => l.startsWith('data:')).map(l => l.slice(5).trim()).join('');
+      if (!data || data === '[DONE]') continue;
+      let event;
+      try { event = JSON.parse(data); } catch (e) { continue; }
+      if (event.event_type === 'step.delta' && event.delta?.type === 'text' && event.delta.text) {
+        text += event.delta.text;
+        onText(event.delta.text);
+      } else if (event.event_type === 'error') {
+        const message = event.error?.message || 'The AI stopped with an error.';
+        throw BUSY_STATUSES.includes(event.error?.code) || !text ? busyError(message) : new Error(message);
+      }
+    }
+  }
+  return text;
 }
 
-// Asks one model, giving up after TUTOR_TIMEOUT seconds.
-async function askModel(key, model, question) {
-  const abort = new AbortController();
-  const timeout = setTimeout(() => abort.abort(), TUTOR_TIMEOUT * 1000);
-  try {
-    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-      signal: abort.signal,
-      body: JSON.stringify({
-        model: model.id,
-        system_instruction: tutorPrompt(),
-        input: question,
-        ...(model.config ? { generation_config: model.config } : {}),
-        ...(tutorLastId ? { previous_interaction_id: tutorLastId } : {})
-      })
-    });
-    const body = await res.json();
-    return { res, data: Array.isArray(body) ? body[0] : body }; // errors sometimes come wrapped in a list
-  } catch (err) {
-    if (err.name === 'AbortError') return { timedOut: true };
-    throw err;
-  } finally {
-    clearTimeout(timeout);
+// Asks the models in order, starting a backup when one is busy or slow, and streams whichever writes first.
+async function askRoque(key, question, onText, onNote) {
+  const input = tutorInput(question);
+  const attempts = [];
+  let next = 0, lastError = null;
+  const start = () => {
+    const model = TUTOR_MODELS[next++];
+    const a = { ctrl: new AbortController(), chunks: [] };
+    a.first = new Promise(resolve => { a.gotText = resolve; });
+    a.done = streamModel(key, model, input, a.ctrl.signal, chunk => {
+      if (a.winner) onText(chunk); else { a.chunks.push(chunk); a.gotText(); }
+    }).then(text => { a.text = text; }, err => { a.error = err; });
+    attempts.push(a);
+    if (next > 1) onNote(' Google is slow, so asking a backup too…');
+  };
+  const sleep = s => new Promise(r => setTimeout(r, s * 1000));
+  const stopAll = () => attempts.forEach(a => a.ctrl.abort());
+  const deadline = Date.now() + TUTOR_TIMEOUT * 1000;
+  start();
+  for (;;) {
+    const running = attempts.filter(a => !a.over);
+    if (!running.length && next >= TUTOR_MODELS.length) {
+      if (lastError && !lastError.busy) throw lastError;
+      throw new Error(`Google's AI is very busy right now, so ${TUTOR_NAME} couldn't answer. Wait a minute and try again.`);
+    }
+    const left = (deadline - Date.now()) / 1000;
+    const event = await Promise.race([
+      ...running.map(a => a.first.then(() => ({ kind: 'text', a }))),
+      ...running.map(a => a.done.then(() => ({ kind: 'over', a }))),
+      sleep(Math.max(0, next < TUTOR_MODELS.length ? Math.min(TUTOR_HEDGE, left) : left)).then(() => ({ kind: 'wait' }))
+    ]);
+    if (event.kind === 'text') {
+      const a = event.a;
+      a.winner = true;
+      attempts.filter(o => o !== a).forEach(o => o.ctrl.abort());
+      a.chunks.forEach(onText);
+      await a.done;
+      if (a.error) throw a.error;
+      return a.text;
+    }
+    if (event.kind === 'over') {
+      const a = event.a;
+      a.over = true;
+      if (a.error && !a.error.busy) { stopAll(); throw a.error; }
+      lastError = a.error || new Error("Sorry, I couldn't generate a response right now.");
+      if (next < TUTOR_MODELS.length) start();
+      continue;
+    }
+    if (Date.now() >= deadline) {
+      stopAll();
+      throw new Error(`${TUTOR_NAME} didn't start answering within ${TUTOR_TIMEOUT} seconds. Check your internet connection and try again.`);
+    }
+    if (next < TUTOR_MODELS.length) start();
   }
 }
 
@@ -430,34 +527,28 @@ function renderTutor() {
     sendBtn.disabled = true;
     const reply = tutorMessage('model', '<p class="source"></p>');
     const status = tutorStatus(reply.querySelector('.source'));
+    const win = document.getElementById('chat-window');
+    let shown = '';
     try {
-      let data = null;
-      for (const [i, model] of TUTOR_MODELS.entries()) {
-        if (i > 0) status.note(' Google is busy, so trying a backup…');
-        const r = await askModel(key, model, question);
-        if (r.timedOut || tutorBusy(r.res, r.data)) continue;
-        if (!r.res.ok) throw new Error(r.data?.error?.message || r.res.statusText);
-        data = r.data;
-        break;
-      }
-      if (!data) throw new Error(`Google's AI is very busy right now, so ${TUTOR_NAME} couldn't answer. Wait a minute and try again.`);
-      // The reply text is in the "model_output" steps.
-      const text = (data.steps || []).filter(s => s.type === 'model_output')
-        .flatMap(s => s.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
+      const text = await askRoque(key, question, chunk => {
+        if (!shown) status.stop();
+        shown += chunk;
+        reply.innerHTML = tutorFormat(shown);
+        win.scrollTop = win.scrollHeight;
+      }, note => status.note(note));
       if (!text) throw new Error("Sorry, I couldn't generate a response right now.");
-      tutorLastId = data.id;
       tutorHistory.push({ role: 'user', text: question }, { role: 'model', text });
-      status.stop();
       reply.innerHTML = tutorFormat(text);
     } catch (err) {
       console.error('Error fetching AI response:', err);
       status.stop();
-      reply.innerHTML = `<p class="source">${esc(err.message || 'An error occurred while connecting to the AI.')}</p>`;
+      // Keep any part of the answer that already arrived, and say it was cut short.
+      reply.innerHTML = (shown ? tutorFormat(shown) : '') +
+        `<p class="source">${esc(err.message || 'An error occurred while connecting to the AI.')}</p>`;
     } finally {
       sendBtn.disabled = false;
       userInput.focus();
     }
-    const win = document.getElementById('chat-window');
     win.scrollTop = win.scrollHeight;
   }
 
@@ -465,7 +556,7 @@ function renderTutor() {
   userInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleUserQuery(); }
   });
-  document.getElementById('clear-btn').addEventListener('click', () => { tutorHistory = []; tutorLastId = null; renderTutor(); });
+  document.getElementById('clear-btn').addEventListener('click', () => { tutorHistory = []; renderTutor(); });
   document.getElementById('forget-key').addEventListener('click', e => {
     e.preventDefault();
     try { localStorage.removeItem('gemini-key'); } catch (err) {}
