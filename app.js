@@ -285,8 +285,14 @@ function renderSources() {
 // Roque, the AI tutor, is a Gemini chat in a panel that opens from the header and stays open between pages.
 // The site is public, so the Gemini key is never in the code: each visitor pastes their own, kept in their browser only.
 const TUTOR_NAME = 'Roque';
-const TUTOR_MODEL = 'gemini-3.8-flash';
-const TUTOR_TIMEOUT = 90; // seconds
+// Smartest first. When a model is busy or slow, Roque tries the next one with the same key.
+// Only gemini-3.8-flash is known to accept thinking_level, so the others use Google's default.
+const TUTOR_MODELS = [
+  { id: 'gemini-3.8-flash', config: { thinking_level: 'low' } }, // quicker answers; medium is Google's default
+  { id: 'gemini-3.6-flash' },
+  { id: 'gemini-3.5-flash-lite' }
+];
+const TUTOR_TIMEOUT = 40; // seconds to wait for each model
 const tutorPanel = document.getElementById('tutor-panel');
 const tutorBody = document.getElementById('tutor-body');
 const tutorBtn = document.getElementById('tutor-btn');
@@ -342,10 +348,43 @@ function closeTutor() {
 // Shows what Roque is doing, with a seconds counter so a slow reply never looks frozen.
 function tutorStatus(el) {
   const start = Date.now();
-  const show = () => { el.textContent = `Thinking… (${Math.round((Date.now() - start) / 1000)}s)`; };
+  let note = '';
+  const show = () => { el.textContent = `Thinking… (${Math.round((Date.now() - start) / 1000)}s)${note}`; };
   const timer = setInterval(show, 1000);
   show();
-  return { stop() { clearInterval(timer); } };
+  return { note(text) { note = text; show(); }, stop() { clearInterval(timer); } };
+}
+
+// Errors that mean "this model is busy right now", rather than a problem with the key or the question.
+function tutorBusy(res, data) {
+  return res.status === 429 || res.status >= 500 || ['UNAVAILABLE', 'RESOURCE_EXHAUSTED'].includes(data?.error?.status);
+}
+
+// Asks one model, giving up after TUTOR_TIMEOUT seconds.
+async function askModel(key, model, question) {
+  const abort = new AbortController();
+  const timeout = setTimeout(() => abort.abort(), TUTOR_TIMEOUT * 1000);
+  try {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      signal: abort.signal,
+      body: JSON.stringify({
+        model: model.id,
+        system_instruction: tutorPrompt(),
+        input: question,
+        ...(model.config ? { generation_config: model.config } : {}),
+        ...(tutorLastId ? { previous_interaction_id: tutorLastId } : {})
+      })
+    });
+    const body = await res.json();
+    return { res, data: Array.isArray(body) ? body[0] : body }; // errors sometimes come wrapped in a list
+  } catch (err) {
+    if (err.name === 'AbortError') return { timedOut: true };
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function renderTutor() {
@@ -391,25 +430,17 @@ function renderTutor() {
     sendBtn.disabled = true;
     const reply = tutorMessage('model', '<p class="source"></p>');
     const status = tutorStatus(reply.querySelector('.source'));
-    // Give up rather than leave the student waiting for ever.
-    const abort = new AbortController();
-    const timeout = setTimeout(() => abort.abort(), TUTOR_TIMEOUT * 1000);
     try {
-      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        signal: abort.signal,
-        body: JSON.stringify({
-          model: TUTOR_MODEL,
-          system_instruction: tutorPrompt(),
-          input: question,
-          generation_config: { thinking_level: 'low' }, // quicker answers; medium is Google's default
-          ...(tutorLastId ? { previous_interaction_id: tutorLastId } : {})
-        })
-      });
-      const body = await res.json();
-      const data = Array.isArray(body) ? body[0] : body; // errors sometimes come wrapped in a list
-      if (!res.ok) throw new Error(data?.error?.message || res.statusText);
+      let data = null;
+      for (const [i, model] of TUTOR_MODELS.entries()) {
+        if (i > 0) status.note(' Google is busy, so trying a backup…');
+        const r = await askModel(key, model, question);
+        if (r.timedOut || tutorBusy(r.res, r.data)) continue;
+        if (!r.res.ok) throw new Error(r.data?.error?.message || r.res.statusText);
+        data = r.data;
+        break;
+      }
+      if (!data) throw new Error(`Google's AI is very busy right now, so ${TUTOR_NAME} couldn't answer. Wait a minute and try again.`);
       // The reply text is in the "model_output" steps.
       const text = (data.steps || []).filter(s => s.type === 'model_output')
         .flatMap(s => s.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
@@ -421,12 +452,8 @@ function renderTutor() {
     } catch (err) {
       console.error('Error fetching AI response:', err);
       status.stop();
-      const message = err.name === 'AbortError'
-        ? `${TUTOR_NAME} didn't answer within ${TUTOR_TIMEOUT} seconds. Check your internet connection and try again.`
-        : err.message || 'An error occurred while connecting to the AI.';
-      reply.innerHTML = `<p class="source">${esc(message)}</p>`;
+      reply.innerHTML = `<p class="source">${esc(err.message || 'An error occurred while connecting to the AI.')}</p>`;
     } finally {
-      clearTimeout(timeout);
       sendBtn.disabled = false;
       userInput.focus();
     }
