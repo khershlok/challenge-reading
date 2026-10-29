@@ -209,7 +209,7 @@ function renderAbout() {
     <h3>Where the lessons come from</h3>
     <p>Nothing is planned in advance. Claude reads the news in depth three times a day: BBC News, The New York Times, The Economist, The Guardian, The Conversation, Aeon and Psyche. Every Sunday it writes the next lesson about the week's most interesting story, ready for Monday. Some New York Times and Economist links need a subscription.</p>
     <h3>The AI tutor</h3>
-    <p>The <a href="#tutor">AI tutor</a> button at the top of every page opens a chat that explains the news, gives feedback on your summaries and writing, and lets you practise for the interview. It stays open while you move around the site. It runs on Google Gemini: paste in a Gemini API key the first time, and it stays in your browser.</p>
+    <p>The <a href="#tutor">AI tutor</a> button at the top of every page opens a chat that explains the news, gives feedback on your summaries and writing, and lets you practise for the interview. It stays open while you move around the site. It is a free, open AI (Llama 3.2) that runs on your own computer, so there is no account, key or sign-in, and your questions never leave your browser. The first question downloads it (about 2 GB, once). It works best in Chrome or Edge on a laptop or desktop.</p>
     <p>Your drafts and ticks are saved in this browser only.</p>`;
 }
 
@@ -282,14 +282,18 @@ function renderSources() {
     .catch(() => { document.getElementById('logList').innerHTML = '<p>The news log could not be loaded. Use the link above.</p>'; });
 }
 
-// The AI tutor is a Gemini chat in a panel that opens from the header and stays open between pages.
-// The site is public, so the Gemini key is never in the code: each visitor pastes their own, kept in their browser only.
-const TUTOR_MODEL = 'gemini-3.8-flash';
+// The AI tutor is a chat panel that opens from the header and stays open between pages.
+// It runs a free, open AI model (Llama 3.2, 3B) inside the visitor's browser with WebLLM:
+// no company, key or sign-in. The model downloads once (about 2 GB) and is then kept by the browser.
+const WEBLLM_URL = 'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.86/+esm';
+const TUTOR_MODELS = { f16: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', f32: 'Llama-3.2-3B-Instruct-q4f32_1-MLC' };
+const TUTOR_KEEP = 8; // the model only has room for a short conversation, so send the latest messages
 const tutorPanel = document.getElementById('tutor-panel');
 const tutorBody = document.getElementById('tutor-body');
 const tutorBtn = document.getElementById('tutor-btn');
-let tutorHistory = []; // what is shown in the panel: { role, text }
-let tutorLastId = null; // Google keeps the conversation; each reply continues from the previous interaction
+let tutorHistory = []; // { role: 'user' | 'assistant', content }
+let tutorEngine = null;
+try { localStorage.removeItem('gemini-key'); } catch (e) {} // left over from the old Gemini tutor
 
 function plain(html) { return new DOMParser().parseFromString(html, 'text/html').body.textContent.trim(); }
 
@@ -300,7 +304,7 @@ function tutorPrompt() {
     (w ? `This week's lesson is "${w.title}": ${plain(w.standfirst)} The Part A practice passage is: ${plain(w.drill.passage)}` : '');
 }
 
-// Gemini replies in Markdown; show paragraphs, lists and bold without trusting any HTML in it.
+// The model replies in Markdown; show paragraphs, lists and bold without trusting any HTML in it.
 function tutorFormat(text) {
   return esc(text).split(/\n{2,}/).map(block => {
     const b = block.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/(^|\s)\*(\S.*?)\*/g, '$1<em>$2</em>');
@@ -327,8 +331,8 @@ function openTutor(prefill) {
   tutorPanel.hidden = false;
   tutorBtn.setAttribute('aria-expanded', 'true');
   if (!tutorBody.innerHTML) renderTutor();
-  const input = document.getElementById('user-input') || document.getElementById('key');
-  if (prefill && input.id === 'user-input') input.value = prefill;
+  const input = document.getElementById('user-input');
+  if (prefill) input.value = prefill;
   input.focus();
 }
 
@@ -337,40 +341,36 @@ function closeTutor() {
   tutorBtn.setAttribute('aria-expanded', 'false');
 }
 
+// Loads the model the first time it is needed. The faster f16 version needs a graphics card that supports it.
+async function loadTutor(status) {
+  if (tutorEngine) return tutorEngine;
+  const adapter = navigator.gpu && await navigator.gpu.requestAdapter();
+  if (!adapter) throw new Error('This browser cannot run the tutor. Try Chrome or Edge on a laptop or desktop computer.');
+  const model = adapter.features.has('shader-f16') ? TUTOR_MODELS.f16 : TUTOR_MODELS.f32;
+  const webllm = await import(WEBLLM_URL);
+  tutorEngine = await webllm.CreateMLCEngine(model, {
+    initProgressCallback: p => { status.textContent = p.progress < 1 ? `Loading the tutor: ${Math.round(p.progress * 100)}%. The first time downloads about 2 GB, so this can take a few minutes.` : 'Starting…'; }
+  });
+  return tutorEngine;
+}
+
 function renderTutor() {
-  const key = store('gemini-key');
-  tutorBody.innerHTML = key ? `
+  tutorBody.innerHTML = `
     <div id="chat-window" class="chat-window">
-      <p class="source">Ask about this week's lesson or the news, paste in your writing for feedback, or try out an argument. The tutor is an AI, so check what it tells you.</p>
+      <p class="source">Ask about this week's lesson or the news, paste in your writing for feedback, or try out an argument. The tutor is a small AI that runs on your own computer, so it is free and private but can make mistakes: check what it tells you.</p>
+      <p class="source">The first question downloads the AI (about 2 GB, once). It works best in Chrome or Edge on a laptop or desktop.</p>
     </div>
     <div class="chat-input">
       <textarea id="user-input" aria-label="Your question" placeholder="Ask the tutor…"></textarea>
       <div class="chat-actions">
         <button id="send-btn">Send</button>
         <button id="clear-btn" class="secondary">New chat</button>
-        <a href="#" id="forget-key" class="source-inline">Remove key</a>
       </div>
-    </div>` : `
-    <div class="chat-setup">
-      <label class="task-q" for="key">Paste your Gemini API key to start</label>
-      <input id="key" type="password" class="key-input" autocomplete="off" placeholder="Gemini API key">
-      <div class="chat-actions"><button id="save-key">Save key</button></div>
-      <p class="source" style="margin-top:10px">The key is saved in this browser only.</p>
     </div>`;
-
-  if (!key) {
-    const save = () => {
-      const k = document.getElementById('key').value.trim();
-      if (k) { store('gemini-key', k); renderTutor(); document.getElementById('user-input').focus(); }
-    };
-    document.getElementById('save-key').addEventListener('click', save);
-    document.getElementById('key').addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
-    return;
-  }
 
   const sendBtn = document.getElementById('send-btn');
   const userInput = document.getElementById('user-input');
-  tutorHistory.forEach(m => tutorMessage(m.role, m.role === 'user' ? esc(m.text).replace(/\n/g, '<br>') : tutorFormat(m.text)));
+  tutorHistory.forEach(m => tutorMessage(m.role, m.role === 'user' ? esc(m.content).replace(/\n/g, '<br>') : tutorFormat(m.content)));
 
   async function handleUserQuery() {
     const question = userInput.value.trim();
@@ -378,36 +378,32 @@ function renderTutor() {
     tutorMessage('user', esc(question).replace(/\n/g, '<br>'));
     userInput.value = '';
     sendBtn.disabled = true;
-    const reply = tutorMessage('model', '<p class="source">Thinking…</p>');
+    const reply = tutorMessage('assistant', '<p class="source">Thinking…</p>');
+    const status = reply.querySelector('.source');
+    const messages = [...tutorHistory, { role: 'user', content: question }];
+    const win = document.getElementById('chat-window');
     try {
-      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify({
-          model: TUTOR_MODEL,
-          system_instruction: tutorPrompt(),
-          input: question,
-          ...(tutorLastId ? { previous_interaction_id: tutorLastId } : {})
-        })
+      const engine = await loadTutor(status);
+      status.textContent = 'Thinking…';
+      const stream = await engine.chat.completions.create({
+        messages: [{ role: 'system', content: tutorPrompt() }, ...messages.slice(-TUTOR_KEEP)],
+        stream: true
       });
-      const body = await res.json();
-      const data = Array.isArray(body) ? body[0] : body; // errors sometimes come wrapped in a list
-      if (!res.ok) throw new Error(data?.error?.message || res.statusText);
-      // The reply text is in the "model_output" steps.
-      const text = (data.steps || []).filter(s => s.type === 'model_output')
-        .flatMap(s => s.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
-      if (!text) throw new Error("Sorry, I couldn't generate a response right now.");
-      tutorLastId = data.id;
-      tutorHistory.push({ role: 'user', text: question }, { role: 'model', text });
-      reply.innerHTML = tutorFormat(text);
+      let text = '';
+      for await (const chunk of stream) {
+        text += chunk.choices[0]?.delta?.content || '';
+        reply.innerHTML = tutorFormat(text);
+        win.scrollTop = win.scrollHeight;
+      }
+      if (!text) throw new Error("Sorry, I couldn't think of an answer. Try asking in a different way.");
+      tutorHistory = [...messages, { role: 'assistant', content: text }];
     } catch (err) {
-      console.error('Error fetching AI response:', err);
-      reply.innerHTML = `<p class="source">${esc(err.message || 'An error occurred while connecting to the AI.')}</p>`;
+      console.error('Tutor error:', err);
+      reply.innerHTML = `<p class="source">${esc(err.message || 'Something went wrong with the tutor.')}</p>`;
     } finally {
       sendBtn.disabled = false;
       userInput.focus();
     }
-    const win = document.getElementById('chat-window');
     win.scrollTop = win.scrollHeight;
   }
 
@@ -415,12 +411,7 @@ function renderTutor() {
   userInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleUserQuery(); }
   });
-  document.getElementById('clear-btn').addEventListener('click', () => { tutorHistory = []; tutorLastId = null; renderTutor(); });
-  document.getElementById('forget-key').addEventListener('click', e => {
-    e.preventDefault();
-    try { localStorage.removeItem('gemini-key'); } catch (err) {}
-    renderTutor();
-  });
+  document.getElementById('clear-btn').addEventListener('click', () => { tutorHistory = []; renderTutor(); });
 }
 
 tutorBtn.addEventListener('click', () => tutorPanel.hidden ? openTutor() : closeTutor());
