@@ -286,6 +286,7 @@ function renderSources() {
 // The site is public, so the Gemini key is never in the code: each visitor pastes their own, kept in their browser only.
 const TUTOR_NAME = 'Roque';
 const TUTOR_MODEL = 'gemini-3.8-flash';
+const TUTOR_TIMEOUT = 90; // seconds
 const tutorPanel = document.getElementById('tutor-panel');
 const tutorBody = document.getElementById('tutor-body');
 const tutorBtn = document.getElementById('tutor-btn');
@@ -390,14 +391,19 @@ function renderTutor() {
     sendBtn.disabled = true;
     const reply = tutorMessage('model', '<p class="source"></p>');
     const status = tutorStatus(reply.querySelector('.source'));
+    // Give up rather than leave the student waiting for ever.
+    const abort = new AbortController();
+    const timeout = setTimeout(() => abort.abort(), TUTOR_TIMEOUT * 1000);
     try {
       const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        signal: abort.signal,
         body: JSON.stringify({
           model: TUTOR_MODEL,
           system_instruction: tutorPrompt(),
           input: question,
+          generation_config: { thinking_level: 'low' }, // quicker answers; medium is Google's default
           ...(tutorLastId ? { previous_interaction_id: tutorLastId } : {})
         })
       });
@@ -415,8 +421,12 @@ function renderTutor() {
     } catch (err) {
       console.error('Error fetching AI response:', err);
       status.stop();
-      reply.innerHTML = `<p class="source">${esc(err.message || 'An error occurred while connecting to the AI.')}</p>`;
+      const message = err.name === 'AbortError'
+        ? `${TUTOR_NAME} didn't answer within ${TUTOR_TIMEOUT} seconds. Check your internet connection and try again.`
+        : err.message || 'An error occurred while connecting to the AI.';
+      reply.innerHTML = `<p class="source">${esc(message)}</p>`;
     } finally {
+      clearTimeout(timeout);
       sendBtn.disabled = false;
       userInput.focus();
     }
