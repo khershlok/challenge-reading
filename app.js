@@ -284,7 +284,7 @@ function renderSources() {
 
 // The AI tutor is a Gemini chat in a panel that opens from the header and stays open between pages.
 // The site is public, so the Gemini key is never in the code: each visitor pastes their own, kept in their browser only.
-const TUTOR_MODEL = 'gemini-2.5-flash';
+const TUTOR_MODEL = 'gemini-3.8-flash';
 const tutorPanel = document.getElementById('tutor-panel');
 const tutorBody = document.getElementById('tutor-body');
 const tutorBtn = document.getElementById('tutor-btn');
