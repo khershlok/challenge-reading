@@ -113,6 +113,7 @@ function renderWeek(w) {
       <p class="task-q">1. ${d.summaryQ} <span class="marks">[10]</span></p>
       <textarea id="sum" aria-label="Your summary" placeholder="Your summary, in your own words…"></textarea>
       <div class="counter" id="sumCount">0 / 75 words</div>
+      <p class="source"><a href="#tutor">Get your summary marked by the AI tutor →</a></p>
       <details><summary>Show a model summary</summary><p>${d.model} <span class="marks">(${words(d.model)} words)</span></p></details>
     </div>
 
@@ -207,6 +208,8 @@ function renderAbout() {
     </ul>
     <h3>Where the lessons come from</h3>
     <p>Nothing is planned in advance. Claude reads the news in depth three times a day: BBC News, The New York Times, The Economist, The Guardian, The Conversation, Aeon and Psyche. Every Sunday it writes the next lesson about the week's most interesting story, ready for Monday. Some New York Times and Economist links need a subscription.</p>
+    <h3>The AI tutor</h3>
+    <p>The <a href="#tutor">AI tutor</a> explains the news, marks your summaries and writing, and gives you interview practice. It runs on Claude, on claude.ai.</p>
     <p>Your drafts and ticks are saved in this browser only.</p>`;
 }
 
@@ -346,6 +349,28 @@ function renderSources() {
     .catch(() => { document.getElementById('logList').innerHTML = '<p>The news log could not be loaded. Use the link above.</p>'; });
 }
 
+const TUTOR_URL = 'https://claude.ai/artifact/UdFGuYoeqm9B61HGsYYpYG';
+
+function renderTutor() {
+  app.innerHTML = `
+    <h1>AI tutor</h1>
+    <p class="standfirst">Challenge Tutor runs on Claude. It knows this week's lesson and the checked news stories on this site, and it coaches you rather than writing answers for you.</p>
+    <div class="done-row" style="margin-top:0"><a class="button" href="${TUTOR_URL}" target="_blank" rel="noopener">Open Challenge Tutor</a></div>
+    <h3>What it can do</h3>
+    <ul>
+      <li><strong>Explain the news:</strong> ask about anything in this week's lesson or news.</li>
+      <li><strong>Mark my summary:</strong> it counts your words and marks your Part A summary out of 10, with what to fix.</li>
+      <li><strong>Mark my writing:</strong> an indicative mark for a Part A paragraph (out of 15) or a Part B essay (out of 25), with ways to improve.</li>
+      <li><strong>Practise the interview:</strong> it asks one question at a time and follows up on your answers, then gives feedback.</li>
+    </ul>
+    <h3>Good to know</h3>
+    <ul>
+      <li>It opens on claude.ai, and you need to be signed in to Claude. The first time, Claude asks you to allow the page. Answers use your Claude usage.</li>
+      <li>It does not search the web. Its news is refreshed every Sunday with the new lesson. For anything newer, use the <a href="#questions">Question bank</a>.</li>
+      <li>It can make mistakes, so check facts on the <a href="#sources">Sources page</a>.</li>
+    </ul>`;
+}
+
 function route() {
   const h = location.hash.slice(1);
   const m = h.match(/^week-(\d+)$/);
@@ -353,6 +378,7 @@ function route() {
   else if (h === 'about') renderAbout();
   else if (h === 'news') renderNews();
   else if (h === 'sources') renderSources();
+  else if (h === 'tutor') renderTutor();
   else if (h.startsWith('questions')) {
     let about = '';
     try { about = decodeURIComponent(h.slice(10)); } catch (e) {}
