@@ -293,7 +293,7 @@ const TUTOR_MODELS = [
   { id: 'gemini-3.6-flash' },
   { id: 'gemini-3.5-flash-lite' }
 ];
-const TUTOR_HEDGE = 6; // seconds before also asking a backup
+const TUTOR_HEDGE = 10; // seconds before also asking a backup (searching Google takes a few seconds)
 const TUTOR_TIMEOUT = 45; // seconds before giving up if no model has started writing
 const TUTOR_KEEP = 10; // recent messages sent with each question, so Roque remembers the conversation
 const tutorPanel = document.getElementById('tutor-panel');
@@ -303,20 +303,19 @@ let tutorHistory = []; // { role: 'user' | 'model', text }
 
 function plain(html) { return new DOMParser().parseFromString(html, 'text/html').body.textContent.trim(); }
 
-// Roque's way of tutoring is modelled on how Claude teaches: Socratic, honest and specific.
+// Roque answers anything, searching Google for anything recent. Its manner is modelled on Claude:
+// direct, honest and careful. It only turns to exam coaching when the student asks for it.
 function tutorPrompt() {
   const w = currentWeek();
+  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   return [
-    `Your name is ${TUTOR_NAME}. You tutor a student preparing for the General Paper of The Challenge exam at Westminster School (King's Scholarship).`,
-    'The paper has Part A: summarise a challenging text in under 75 words, then write one paragraph answering a question about it; and Part B: an open-ended essay. It rewards precise, rigorous, independent thinking, not memorised facts. Shortlisted candidates are questioned on their answers at interview.',
-    'How to tutor:',
-    '- Coach, don\'t do the work. Never write a summary, paragraph or essay for the student. Ask a question that helps them see the next step, then let them try.',
-    '- Be honest and specific. Say clearly what is strong and what is weak, quoting their own words. Give one or two improvements at a time, the most important first.',
-    '- Think critically with them. Name the assumption behind an argument, offer the strongest counter-argument, and separate what is known from what is opinion.',
-    '- When marking, give an indicative mark (summary out of 10, paragraph out of 15, essay out of 25) and say it is only a guide.',
-    '- If you are not sure of a fact, say so. Do not invent quotations, statistics or sources.',
-    '- Keep replies short: usually under 150 words, in plain British English, warm but not gushing. End with a question when it helps the student think further.',
-    w ? `This week's lesson is "${w.title}": ${plain(w.standfirst)} The Part A practice passage is: ${plain(w.drill.passage)}` : ''
+    `Your name is ${TUTOR_NAME}. You are a knowledgeable, friendly assistant for a student. Today is ${today}.`,
+    'Answer whatever the student asks, on any subject, directly and fully. Do not turn ordinary questions into exam practice, and do not end every reply with a question.',
+    'For anything about recent events, the news, people in the news, prices, sport, or anything that may have changed, search Google first and base your answer on what you find. Say when something happened, and if you cannot find it, say so rather than guessing.',
+    'Be honest and careful: separate facts from opinion, give the main sides of a debate fairly, and never invent quotations, statistics or sources. Write in plain British English. Match the length to the question: short for simple questions, longer when the student wants depth.',
+    'The student is preparing for the General Paper of The Challenge exam at Westminster School. Part A: summarise a challenging text in under 75 words, then write one paragraph answering a question about it. Part B: an open-ended essay. It rewards precise, rigorous, independent thinking.',
+    'Only when the student asks for help with an exam answer (planning, phrasing, improving or marking a summary, paragraph or essay) act as their tutor: be specific about what is strong and weak, quoting their words; suggest better phrasing for the parts they ask about; give the strongest counter-argument; and if they want a mark, give an indicative one (summary out of 10, paragraph out of 15, essay out of 25) and say it is only a guide.',
+    w ? `For reference, this week's lesson on the site is "${w.title}": ${plain(w.standfirst)} Its Part A practice passage is: ${plain(w.drill.passage)}` : ''
   ].join('\n');
 }
 
@@ -339,6 +338,24 @@ function tutorFormat(text) {
     }
     return `<p>${b.replace(/^#+\s*/, '').replace(/\n/g, '<br>')}</p>`;
   }).join('');
+}
+
+// The pages Google found, listed under an answer that used search.
+function tutorSources(sources) {
+  if (!sources || !sources.size) return '';
+  const links = [...sources].slice(0, 6).map(([url, title]) => `<li>${ext(esc(url), esc(title))}</li>`).join('');
+  return `<p class="source chat-sources-label">Sources</p><ul class="links chat-sources">${links}</ul>`;
+}
+
+// Google's terms ask for its search suggestions to be shown with answers that used search. Its HTML
+// goes in a sandboxed frame so it cannot touch the page; its links open in a new tab.
+function searchSuggestions(html) {
+  const frame = document.createElement('iframe');
+  frame.className = 'search-suggestions';
+  frame.title = 'Google search suggestions';
+  frame.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox');
+  frame.srcdoc = `<base target="_blank">${html}`;
+  return frame;
 }
 
 function tutorMessage(role, html) {
@@ -379,8 +396,18 @@ function tutorStatus(el) {
 function busyError(message) { const e = new Error(message); e.busy = true; return e; }
 const BUSY_STATUSES = ['UNAVAILABLE', 'RESOURCE_EXHAUSTED', 'DEADLINE_EXCEEDED', 'gateway_timeout', 'unavailable', 'resource_exhausted'];
 
-// Streams one model's answer, calling onText with each new piece of text. Resolves with the full text.
-async function streamModel(key, model, input, signal, onText) {
+// Finds the source links (url_citation annotations) and Google's search suggestions anywhere in an event.
+function collectSearch(node, found) {
+  if (!node || typeof node !== 'object') return;
+  if (Array.isArray(node)) { node.forEach(n => collectSearch(n, found)); return; }
+  if (node.type === 'url_citation' && node.url) found.sources.set(node.url, node.title || node.url);
+  if (typeof node.search_suggestions === 'string') found.suggestions = node.search_suggestions;
+  Object.values(node).forEach(v => collectSearch(v, found));
+}
+
+// Streams one model's answer, calling onText with each new piece of text and onSearch when it searches Google.
+// Resolves with { text, sources: Map(url → title), suggestions: Google's HTML snippet or '' }.
+async function streamModel(key, model, input, signal, onText, onSearch) {
   const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions?alt=sse', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
@@ -389,6 +416,7 @@ async function streamModel(key, model, input, signal, onText) {
       model: model.id,
       system_instruction: tutorPrompt(),
       input,
+      tools: [{ type: 'google_search' }],
       stream: true,
       store: false,
       ...(model.config ? { generation_config: model.config } : {})
@@ -405,6 +433,7 @@ async function streamModel(key, model, input, signal, onText) {
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '', text = '';
+  const found = { sources: new Map(), suggestions: '' };
   for (;;) {
     const { value, done } = await reader.read();
     if (done) break;
@@ -416,6 +445,8 @@ async function streamModel(key, model, input, signal, onText) {
       if (!data || data === '[DONE]') continue;
       let event;
       try { event = JSON.parse(data); } catch (e) { continue; }
+      collectSearch(event, found);
+      if (event.event_type === 'step.start' && event.step?.type === 'google_search_call') onSearch();
       if (event.event_type === 'step.delta' && event.delta?.type === 'text' && event.delta.text) {
         text += event.delta.text;
         onText(event.delta.text);
@@ -425,7 +456,7 @@ async function streamModel(key, model, input, signal, onText) {
       }
     }
   }
-  return text;
+  return { text, ...found };
 }
 
 // Asks the models in order, starting a backup when one is busy or slow, and streams whichever writes first.
@@ -439,7 +470,7 @@ async function askRoque(key, question, onText, onNote) {
     a.first = new Promise(resolve => { a.gotText = resolve; });
     a.done = streamModel(key, model, input, a.ctrl.signal, chunk => {
       if (a.winner) onText(chunk); else { a.chunks.push(chunk); a.gotText(); }
-    }).then(text => { a.text = text; }, err => { a.error = err; });
+    }, () => onNote(' Searching Google…')).then(result => { a.result = result; }, err => { a.error = err; });
     attempts.push(a);
     if (next > 1) onNote(' Google is slow, so asking a backup too…');
   };
@@ -466,7 +497,7 @@ async function askRoque(key, question, onText, onNote) {
       a.chunks.forEach(onText);
       await a.done;
       if (a.error) throw a.error;
-      return a.text;
+      return a.result;
     }
     if (event.kind === 'over') {
       const a = event.a;
@@ -488,7 +519,7 @@ function renderTutor() {
   const key = store('gemini-key');
   tutorBody.innerHTML = key ? `
     <div id="chat-window" class="chat-window">
-      <p class="source">Ask ${TUTOR_NAME} about this week's lesson or the news, paste in your writing for feedback, or try out an argument. ${TUTOR_NAME} is an AI (Google Gemini), so check what it tells you.</p>
+      <p class="source">Ask ${TUTOR_NAME} anything, including today's news: it searches Google for anything recent. Ask it to help with an exam answer whenever you want feedback or better phrasing. ${TUTOR_NAME} is an AI (Google Gemini), so check what it tells you.</p>
     </div>
     <div class="chat-input">
       <textarea id="user-input" aria-label="Your question" placeholder="Ask ${TUTOR_NAME}…"></textarea>
@@ -530,7 +561,7 @@ function renderTutor() {
     const win = document.getElementById('chat-window');
     let shown = '';
     try {
-      const text = await askRoque(key, question, chunk => {
+      const { text, sources, suggestions } = await askRoque(key, question, chunk => {
         if (!shown) status.stop();
         shown += chunk;
         reply.innerHTML = tutorFormat(shown);
@@ -538,7 +569,8 @@ function renderTutor() {
       }, note => status.note(note));
       if (!text) throw new Error("Sorry, I couldn't generate a response right now.");
       tutorHistory.push({ role: 'user', text: question }, { role: 'model', text });
-      reply.innerHTML = tutorFormat(text);
+      reply.innerHTML = tutorFormat(text) + tutorSources(sources);
+      if (suggestions) reply.appendChild(searchSuggestions(suggestions));
     } catch (err) {
       console.error('Error fetching AI response:', err);
       status.stop();
