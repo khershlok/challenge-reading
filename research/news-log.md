@@ -295,3 +295,79 @@ Themes this session: Trust and blame ran through the day: Meta privately discuss
 - Tags: justice, law, ethics, US
 
 Themes this session: Who owns and controls ideas: an illustrator against AI firms, China policing remixes of classics, Britain barring an academic and Russia silencing a newspaper, all asking whether ideas should flow freely or be protected. Accountability for the powerful ran through a Spanish minister refusing to resign, US officials shielded from defamation suits and Serbia's new leaders removing the old regime (critics call it "revolutionary justice"). AI showed two faces: counting bats for conservation, and exploited workers building its datacentres. Small update: the BBC reports the Seoul crowd-crush footage will be removed from Call of Duty after the backlash logged on 29 Oct (https://www.bbc.co.uk/news/articles/cr1ex26lgqlqo).
+
+## 2026-10-30 14:00 (second pass)
+
+**NYT · A Powerful Mosquito-Hunting Laser Uses A.I. to Zap Winged Pests** · https://www.nytimes.com/2026/10/30/business/mosquito-laser-ai.html · 30 Oct 2026
+- What happened: The NYT (feed description only; paywalled) reports that a Chinese start-up, using sensors developed for self-driving cars, claims its device can track and destroy tiny flying targets while avoiding people, pets and reflective surfaces. Fox Business (27 Aug) names the company as Photon Matrix: the device uses lidar, radar and AI vision to confirm a mosquito before firing a laser that disables its wings, sells from $988 indoors and $1,088 outdoors, and its safety claims are the company's own, with no independent testing reported (https://foxbusiness.com/technology/laser-wielding-mosquito-killer-hits-market-promising-track-zap-backyard-pests-midair).
+- Big question: Does a mosquito's life count for anything? Is it fine to build a machine whose only job is to kill, as long as the victims are insects? Essay: "Is it worse to be cruel to a dog than to a spider?" (one of the specimen paper questions) / "Should machines ever be allowed to decide what to kill?"
+- Connections: Bentham's "Can they suffer?"; Peter Singer and where to draw the line of moral concern; Jainism and the duty not to harm even insects; debates about autonomous weapons (the same "detect, decide, fire" loop); mosquitoes spread malaria, so the human benefit is real.
+- Tags: AI, animals, ethics, technology [AI] [LESSON]
+
+**Guardian · Experts warn AI copyright changes could breach Australian constitution and spark huge compensation rights case** · https://www.theguardian.com/law/2026/oct/31/experts-warn-ai-copyright-changes-could-breach-australian-constitution-and-spark-huge-compensation-rights-case · 30 Oct 2026 (31 Oct Australian time)
+- What happened: Coalition senators and the music industry warn that changing Australian copyright law to let AI firms scrape music, books and journalism could count as the government "acquiring property", which section 51 of the constitution says must be on "just terms", opening the door to compensation claims from rights holders worldwide. Constitutional expert Anne Twomey said this was "potentially" a concern depending on how a law was drafted; the article reports Anthropic has suggested an "opt-out" model, while PM Anthony Albanese has said it would be "theft" if creatives weren't paid. (Single source.)
+- Big question: Is an idea or a song "property" in the same way a house is? If the state lets companies use it for free, has it taken something? Essay: "Who owns a character once millions of people love it?" (cf. Gruffalo entry, 30 Oct 14:00)
+- Connections: Locke's labour theory of property; the Australian film The Castle (cited in the article); earlier entries on the Gruffalo illustrator and Penguin Random House v OpenAI (30 Oct 14:00).
+- Tags: AI, law, property, Australia [AI]
+
+**Economist · London's courts can thrive under AI—but they are also at risk** · https://www.economist.com/britain/2026/10/29/londons-courts-can-thrive-under-ai-but-they-are-also-at-risk · 29 Oct 2026
+- What happened: The Economist (feed description only; paywalled) reports that "an outgoing top judge gives some parting advice" on AI and London's courts. Context from a web search (not the article itself): Sir Geoffrey Vos retires as Master of the Rolls on 31 October 2026 (judiciary.uk), and on 9 October the senior judiciary published a position statement saying any AI output used in judicial work must be checked and approved by the judge, who remains fully accountable. (Not verified that the Economist's judge is Vos.)
+- Big question: Could a machine ever be a fair judge? Would we accept a verdict from an AI if it were more consistent than a human? Essay: "Should justice always be done by humans?"
+- Connections: "Justice must be seen to be done" (Lord Hewart, 1924); Aristotle on equity, where a rule must be bent to fit a case; trial by jury as judgement by one's peers.
+- Tags: AI, law, justice, UK [AI]
+
+**Economist · Humans will never again create a project quite like Wikipedia** · https://www.economist.com/culture/2026/10/29/humans-will-never-again-create-a-project-quite-like-wikipedia · 29 Oct 2026
+- What happened: The Economist (feed description only; paywalled) marks Wikipedia turning 25, calling it "one of the internet's unlikeliest successes", and argues in its headline that humans will never again create anything quite like it. (Single source; the body of the argument was not read, so whether it is about AI chatbots replacing it is not confirmed.)
+- Big question: Can knowledge written by volunteers whom anyone can edit be more trustworthy than experts? What happens to shared knowledge if people ask chatbots instead of reading and editing it? Essay: "Who should decide what counts as true?"
+- Connections: Diderot's Encyclopédie; Mill on truth emerging from open debate; "the wisdom of crowds"; Plato's worry in the Phaedrus that writing would weaken memory (now asked of AI).
+- Tags: knowledge, truth, internet [AI] [LESSON]
+
+**BBC · Human rights lawyer couple sentenced to 10 years' prison in Pakistan** · https://www.bbc.co.uk/news/articles/crq5nplyvlg8o · 30 Oct 2026
+- What happened: A Pakistani anti-terrorism court jailed human rights lawyers Imaan Mazari and Hadi Ali Chattha for 10 years over an alleged incident in 2024, when they were accused of removing road barriers on the route of England's cricket team's security convoy and obstructing police; they deny the charges. They had earlier been sentenced to up to 17 years over social media posts criticising the military, were re-arrested on the day the Supreme Court granted bail, and Amnesty International says they were denied a fair trial, which was held inside the prison. (Single source.)
+- Big question: When a state uses anti-terrorism law against its critics, can its courts still be called justice? What do lawyers owe to unpopular clients? Essay: "Is a law that is used unfairly still a law?"
+- Connections: Martin Luther King's "Letter from Birmingham Jail" on unjust laws; "prisoners of conscience" (Amnesty's founding idea, 1961); earlier entries on Malm's UK ban and Novaya Gazeta (30 Oct 14:00).
+- Tags: justice, law, human rights, Pakistan
+
+**Guardian · Beijing Queer film festival cancelled after harassment from authorities** · https://www.theguardian.com/world/2026/oct/30/beijing-queer-film-festival-cancelled-after-police-harassment · 30 Oct 2026
+- What happened: The Beijing Queer film festival, founded in 2001 by Peking University students and described as the only mainland Chinese festival offering a public forum for LGBTQ+ films, was cancelled after what is understood to have been weeks of repeated police phone calls. Human Rights Watch's Maya Wang said China is "relentlessly tightening social and ideological control"; the Guardian notes the Beijing Independent film festival was shut in 2014 and that this festival had 200 volunteer applications last year. (Single source.)
+- Big question: Should a government decide which stories its citizens may watch? Is quiet pressure (phone calls) a form of censorship even without a formal ban? Essay: "Is art more powerful when it is forbidden?"
+- Connections: Mill's On Liberty; Milton's Areopagitica; the Hays Code in 1930s Hollywood; earlier entry on China policing AI remixes of classics (30 Oct 14:00).
+- Tags: censorship, art, film, China
+
+**BBC · What makes this golden eagle chick so important?** · https://www.bbc.co.uk/news/articles/cq4g1jyj9dv7o · 30 Oct 2026
+- What happened: A golden eagle chick named Beaky Junior is the first to fledge from a nest on a managed grouse moor in the south of Scotland, part of a project that has moved eagles from the Highlands to the Moffat Hills since 2018 and raised numbers there from a handful of breeding pairs to more than 50. It matters because an RSPB report found 64.3% of 182 confirmed bird-of-prey persecution incidents in Scotland over 10 years happened on land managed for gamebird shooting; the gamekeepers who named the chick asked to stay anonymous. (Single source.)
+- Big question: Can people who shoot birds for sport and people who protect birds share the same land? Is it right to move wild animals around to save a species? Essay: "Should we rewild Britain, even if it costs some people their way of life?"
+- Connections: Aldo Leopold's "land ethic"; the reintroduction of beavers and white-tailed eagles; the "tragedy of the commons" and Elinor Ostrom's work on solving it through co-operation.
+- Tags: environment, animals, UK, conservation
+
+**BBC · How major policy shift is changing police response to mental health call-outs** · https://www.bbc.co.uk/news/articles/cvglwd7y00g5o · 30 Oct 2026
+- What happened: From November, police in Northern Ireland, who handle about 30,000 mental health calls a year (only 3% of welfare calls relate to crime), will stop doing concern-for-welfare checks unless there is a risk to life, harm or a crime, under the "Right Care Right Person" policy used by some forces in England and Wales since 2023. Supporters say a police officer arriving can frighten someone in crisis, while the Royal College of Psychiatrists warns that 30% of mental health posts are vacant, so the safety net may pass to services "already struggling to stand still". (Single source.)
+- Big question: What are the police for: fighting crime, or helping anyone in trouble? If a job is moved to a service that cannot cope, who is responsible when things go wrong? Essay: "Should the police be the people we call when nobody else will come?"
+- Connections: Robert Peel's principles of policing (1829), "the police are the public and the public are the police"; Beveridge and the welfare state; the Spanish rail responsibility entry (30 Oct 14:00).
+- Tags: justice, health, society, UK
+
+**Guardian · 'Ceilidh renaissance' lures gen Z offline in search of real-life joy** · https://www.theguardian.com/music/2026/oct/30/ceilidh-renaissance-traditional-experience-young-people-community-london · 30 Oct 2026
+- What happened: The Guardian reports young people flocking to traditional Scottish ceilidh dances in London, with Eventbrite saying UK ceilidh ticket sales grew 16% from 2024-25 and that young people want events "communal and a lot less polished". Dancers and musicians said ceilidhs are for all ages, nobody judges your dancing and "you can't look cool while you're doing it"; a local anti-loneliness charity raised money from the dance. (Single source.)
+- Big question: Has technology made us lonelier, and can old traditions fix it? Is a tradition worth keeping because it is old, or only if it still makes people happy? Essay: "Should we try to live more like our grandparents did?"
+- Connections: Robert Putnam's Bowling Alone; Durkheim's "collective effervescence"; Aristotle on friendship; earlier Aeon "Other people" essay on community.
+- Tags: technology, culture, community, UK
+
+**Aeon · How intuitions work (Marc A Moffett)** · https://aeon.co/essays/sometimes-you-just-know-somethings-off-but-how · 20 Oct 2026
+- What happened: University of Texas El Paso philosopher Marc A Moffett argues that everyday intuitions, like sensing that something is "off" about a stranger, carry real rational weight, because like perception they present something as true and can justify beliefs without step-by-step reasoning. He links gut feelings to the intuitions philosophers use in thought experiments such as the trolley problem and the fake-barn case, concluding "Intuition does not compete with concept application. It enables it."
+- Big question: Can you know something without being able to explain why? Should we trust gut feelings in moral decisions? Essay: "Is it ever right to trust your instincts over the evidence?"
+- Connections: Philippa Foot and Judith Jarvis Thomson (the trolley problem); Carl Ginet's fake barns; Hume's "reason is the slave of the passions"; Kahneman's fast and slow thinking.
+- Tags: philosophy, knowledge, mind, ethics [LESSON]
+
+**Psyche · Arabic has four words for sadness. Philosophy explains why (Chereen Shurafa)** · https://psyche.co/ideas/arabic-has-four-words-for-sadness-philosophy-explains-why · date not shown on page
+- What happened: Chereen Shurafa, a PhD candidate at Hamad bin Khalifa University in Qatar, distinguishes huzn (grief for a past loss), ghamm (a present, suffocating weight), ka'aba (deep, prolonged dejection visible in the body) and asaf (sorrow mixed with regret). Drawing on al-Kindi's treatise on dispelling sorrows, Ibn Sina and al-Ghazali, she argues that both clinical categories and computer "sentiment analysis" flatten complex feelings into simple labels.
+- Big question: Does the language we speak shape what we can feel? Can a computer that labels moods as "happy" or "sad" understand emotion? Essay: "Can some things only be said in one language?"
+- Connections: Wittgenstein's "the limits of my language mean the limits of my world"; the Sapir-Whorf hypothesis; the problems of translation.
+- Tags: language, mind, philosophy, culture [AI]
+
+**The Conversation · Gulliver's Travels at 300: a satire of the Anglo-Irish and the folly of allegiance to empire** · https://theconversation.com/gullivers-travels-at-300-a-satire-of-the-anglo-irish-and-the-folly-of-allegiance-to-empire-295211 · 27 Oct 2026
+- What happened: University College Cork's Clíona Ó Gallchoir argues that Swift's satire came from his place in Ireland's Protestant elite, a group that saw itself as civilising Ireland yet was looked down on by England. She points to the self-important Lilliputians, the King of Brobdingnag calling the English "the most pernicious race of little odious vermin" and the Academy of Projectors mocking the Royal Society, and says the book still warns against assuming one viewpoint is the only valid one. (Single source.)
+- Big question: Is laughing at the powerful a serious way to change things? Does seeing your own country from the outside make you wiser, or just disloyal? Essay: "Can a joke be more powerful than an argument?"
+- Connections: Swift's A Modest Proposal (1729); Orwell's Animal Farm; Juvenal and Horace as two kinds of satire; Private Eye and Spitting Image.
+- Tags: literature, satire, empire, Ireland
+
+Themes this session: Who controls knowledge and expression ran through Pakistan jailing human rights lawyers, Beijing's queer film festival shut down by police pressure, Australia weighing whether letting AI scrape creative work is a "taking" of property, and the Economist on Wikipedia at 25. AI appeared deciding what to zap (mosquito lasers) and possibly helping to judge (London courts), raising who is accountable when machines act. More gently, ceilidhs, intuitions and Arabic words for sadness all ask what screens and machines miss about human feeling and community.
