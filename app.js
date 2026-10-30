@@ -395,6 +395,10 @@ function tutorStatus(el) {
 // An error that means "this model is busy right now", rather than a problem with the key or the question.
 function busyError(message) { const e = new Error(message); e.busy = true; return e; }
 const BUSY_STATUSES = ['UNAVAILABLE', 'RESOURCE_EXHAUSTED', 'DEADLINE_EXCEEDED', 'gateway_timeout', 'unavailable', 'resource_exhausted'];
+// A used-up free allowance also comes back as 429 / RESOURCE_EXHAUSTED, but waiting a few seconds won't fix it.
+const isQuota = err => /quota|rate limit|limit: ?0|per day|per minute/i.test(err?.message || '');
+// A wrong or blocked key: no point trying other models.
+const isKeyProblem = err => /api key|API_KEY|permission|unauthori[sz]ed|forbidden/i.test(err?.message || '') || err?.status === 401 || err?.status === 403;
 
 // Finds the source links (url_citation annotations) and Google's search suggestions anywhere in an event.
 function collectSearch(node, found) {
@@ -407,7 +411,7 @@ function collectSearch(node, found) {
 
 // Streams one model's answer, calling onText with each new piece of text and onSearch when it searches Google.
 // Resolves with { text, sources: Map(url → title), suggestions: Google's HTML snippet or '' }.
-async function streamModel(key, model, input, signal, onText, onSearch) {
+async function streamModel(key, model, input, signal, onText, onSearch, search = true) {
   const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions?alt=sse', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
@@ -416,7 +420,7 @@ async function streamModel(key, model, input, signal, onText, onSearch) {
       model: model.id,
       system_instruction: tutorPrompt(),
       input,
-      tools: [{ type: 'google_search' }],
+      ...(search ? { tools: [{ type: 'google_search' }] } : {}),
       stream: true,
       store: false,
       ...(model.config ? { generation_config: model.config } : {})
@@ -426,8 +430,9 @@ async function streamModel(key, model, input, signal, onText, onSearch) {
     let data = null;
     try { const body = await res.json(); data = Array.isArray(body) ? body[0] : body; } catch (e) {} // errors sometimes come wrapped in a list
     const message = data?.error?.message || res.statusText || `Error ${res.status}`;
-    if (res.status === 429 || res.status >= 500 || BUSY_STATUSES.includes(data?.error?.status)) throw busyError(message);
-    throw new Error(message);
+    const err = res.status === 429 || res.status >= 500 || BUSY_STATUSES.includes(data?.error?.status) ? busyError(message) : new Error(message);
+    err.status = res.status;
+    throw err;
   }
   // Server-sent events: blocks separated by a blank line, each with a "data: {json}" line.
   const reader = res.body.getReader();
@@ -452,7 +457,7 @@ async function streamModel(key, model, input, signal, onText, onSearch) {
         onText(event.delta.text);
       } else if (event.event_type === 'error') {
         const message = event.error?.message || 'The AI stopped with an error.';
-        throw BUSY_STATUSES.includes(event.error?.code) || !text ? busyError(message) : new Error(message);
+        throw BUSY_STATUSES.includes(event.error?.code) ? busyError(message) : new Error(message);
       }
     }
   }
@@ -462,17 +467,20 @@ async function streamModel(key, model, input, signal, onText, onSearch) {
 // Asks the models in order, starting a backup when one is busy or slow, and streams whichever writes first.
 async function askRoque(key, question, onText, onNote) {
   const input = tutorInput(question);
-  const attempts = [];
-  let next = 0, lastError = null;
+  const attempts = [], errors = [];
+  // Each model is tried with Google Search first. If search itself fails (for example the key's free search
+  // allowance is used up), the same model is tried again without it, so Roque still answers.
+  const queue = TUTOR_MODELS.map(model => ({ model, search: true }));
   const start = () => {
-    const model = TUTOR_MODELS[next++];
-    const a = { ctrl: new AbortController(), chunks: [] };
+    const { model, search } = queue.shift();
+    const a = { ctrl: new AbortController(), chunks: [], search };
     a.first = new Promise(resolve => { a.gotText = resolve; });
     a.done = streamModel(key, model, input, a.ctrl.signal, chunk => {
       if (a.winner) onText(chunk); else { a.chunks.push(chunk); a.gotText(); }
-    }, () => onNote(' Searching Google…')).then(result => { a.result = result; }, err => { a.error = err; });
+    }, () => onNote(' Searching Google…'), search).then(result => { a.result = result; }, err => { a.error = err; });
+    a.model = model;
     attempts.push(a);
-    if (next > 1) onNote(' Google is slow, so asking a backup too…');
+    if (attempts.length > 1) onNote(' Trying a backup…');
   };
   const sleep = s => new Promise(r => setTimeout(r, s * 1000));
   const stopAll = () => attempts.forEach(a => a.ctrl.abort());
@@ -480,15 +488,12 @@ async function askRoque(key, question, onText, onNote) {
   start();
   for (;;) {
     const running = attempts.filter(a => !a.over);
-    if (!running.length && next >= TUTOR_MODELS.length) {
-      if (lastError && !lastError.busy) throw lastError;
-      throw new Error(`Google's AI is very busy right now, so ${TUTOR_NAME} couldn't answer. Wait a minute and try again.`);
-    }
+    if (!running.length && !queue.length) throw tutorFailure(errors);
     const left = (deadline - Date.now()) / 1000;
     const event = await Promise.race([
       ...running.map(a => a.first.then(() => ({ kind: 'text', a }))),
       ...running.map(a => a.done.then(() => ({ kind: 'over', a }))),
-      sleep(Math.max(0, next < TUTOR_MODELS.length ? Math.min(TUTOR_HEDGE, left) : left)).then(() => ({ kind: 'wait' }))
+      sleep(Math.max(0, queue.length && running.length ? Math.min(TUTOR_HEDGE, left) : running.length ? left : 0)).then(() => ({ kind: 'wait' }))
     ]);
     if (event.kind === 'text') {
       const a = event.a;
@@ -497,22 +502,36 @@ async function askRoque(key, question, onText, onNote) {
       a.chunks.forEach(onText);
       await a.done;
       if (a.error) throw a.error;
-      return a.result;
+      return { ...a.result, searched: a.search };
     }
     if (event.kind === 'over') {
       const a = event.a;
       a.over = true;
-      if (a.error && !a.error.busy) { stopAll(); throw a.error; }
-      lastError = a.error || new Error("Sorry, I couldn't generate a response right now.");
-      if (next < TUTOR_MODELS.length) start();
+      const err = a.error || new Error("Google sent back an empty answer.");
+      console.warn(`${a.model.id}${a.search ? ' with search' : ''} failed:`, err.message);
+      errors.push(err);
+      if (isKeyProblem(err)) { stopAll(); throw new Error(`Google didn't accept your key. Check it, or press "Remove key" and paste it again. (Google said: ${err.message})`); }
+      // Plain "overloaded" errors are worth trying elsewhere; anything else may be the search tool, so retry without it.
+      const overloaded = err.busy && !isQuota(err);
+      if (a.search && !overloaded) queue.unshift({ model: a.model, search: false });
+      if (queue.length) start();
       continue;
     }
     if (Date.now() >= deadline) {
       stopAll();
       throw new Error(`${TUTOR_NAME} didn't start answering within ${TUTOR_TIMEOUT} seconds. Check your internet connection and try again.`);
     }
-    if (next < TUTOR_MODELS.length) start();
+    if (queue.length) start();
   }
+}
+
+// Explains why every attempt failed, quoting Google's own words so the cause is never hidden.
+function tutorFailure(errors) {
+  const last = errors[errors.length - 1];
+  const said = last ? ` (Google said: ${last.message})` : '';
+  if (errors.some(isQuota)) return new Error(`Your Gemini key has used up its free allowance for now, so ${TUTOR_NAME} couldn't answer. If it's the per-minute limit, try again in a minute; the daily limit resets overnight.${said}`);
+  if (errors.length && errors.every(e => e.busy)) return new Error(`Google's AI is very busy right now, so ${TUTOR_NAME} couldn't answer. Wait a minute and try again.${said}`);
+  return new Error(`${TUTOR_NAME} couldn't answer.${said}`);
 }
 
 function renderTutor() {
@@ -561,7 +580,7 @@ function renderTutor() {
     const win = document.getElementById('chat-window');
     let shown = '';
     try {
-      const { text, sources, suggestions } = await askRoque(key, question, chunk => {
+      const { text, sources, suggestions, searched } = await askRoque(key, question, chunk => {
         if (!shown) status.stop();
         shown += chunk;
         reply.innerHTML = tutorFormat(shown);
@@ -569,7 +588,8 @@ function renderTutor() {
       }, note => status.note(note));
       if (!text) throw new Error("Sorry, I couldn't generate a response right now.");
       tutorHistory.push({ role: 'user', text: question }, { role: 'model', text });
-      reply.innerHTML = tutorFormat(text) + tutorSources(sources);
+      reply.innerHTML = tutorFormat(text) + tutorSources(sources) +
+        (searched ? '' : `<p class="source chat-sources-label">Google Search wasn't available this time, so this answer may miss very recent news.</p>`);
       if (suggestions) reply.appendChild(searchSuggestions(suggestions));
     } catch (err) {
       console.error('Error fetching AI response:', err);
