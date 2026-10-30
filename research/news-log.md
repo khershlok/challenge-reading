@@ -219,3 +219,79 @@ Themes this session: Who owns and controls stories ran through the news: a gover
 - Tags: philosophy, education, ideas
 
 Themes this session: Trust and blame ran through the day: Meta privately discussing how to discredit the researcher behind the social media ban, Google apologising for felling forests under a law it says it misread, Hong Kong's leader bowing over a fire report, and a philosopher asking whether anyone deserves blame at all. AI's economic shock became concrete, from Google's AI answers eating its own revenue to startups with ten agents per human and a dispute over whether "distilling" US models is theft (the Economist and US officials disagree). Power held without being chosen (wealthy peers, election gamblers, a visa system that treats people as categories) offers strong democracy and fairness lessons.
+
+## 2026-10-30 14:00
+
+**BBC · Gruffalo illustrator considering legal action against AI firms** · https://www.bbc.co.uk/news/articles/cj04032rp5wro · 30 Oct 2026
+- What happened: Axel Scheffler, who has illustrated The Gruffalo since 1999, told BBC London he is "seriously considering" suing AI companies after seeing AI images of "clearly my mouse, my Gruffalo" placed in new scenes, and has spoken to a lawyer in Germany, where courts are seen as more creator-friendly. AI firms argue that training on copyrighted work is not infringement ("Generative AI doesn't copy, it trains", as one lawyer put it), while Penguin Random House is already suing OpenAI in Munich over the children's character Coconut the Little Dragon (ruling due spring 2027).
+- Big question: If a machine learns from an artist's work the way a student does, is that theft or inspiration? Essay: "Who owns a character once millions of people love it?" / "Should machines be allowed to learn from art without asking?"
+- Connections: Locke's labour theory of property; the Statute of Anne (1710) and why copyright expires; fan fiction and fan art; earlier log entries on AI joke-stealing (NYT, 29 Oct) and the AI edit of Neighbours (BBC, 29 Oct). (Single source.)
+- Tags: AI, art, law, property [AI] [LESSON]
+
+**BBC · Swedish academic says he has been barred from UK over event with Palestine Action founder** · https://www.bbc.co.uk/news/articles/ck1l32jdlvl1o · 30 Oct 2026
+- What happened: Climate academic Andreas Malm of Lund University, author of How to Blow Up a Pipeline, was told by the Home Office that his presence was "not conducive to the public good"; he believes it is because he was due to speak at a Tribune magazine event with Huda Ammori, a co-founder of Palestine Action, which is banned as a terrorist group in the UK. Malm, who calls it "guilt by association", says he has never supported the group; the Home Office does not comment on individual cases, and the Guardian reports Sally Rooney called the ban "cultural self-harm" while Tribune's editor called it censorship of a talk about censorship.
+- Big question: Should a free country let in visitors whose ideas it finds dangerous? Where is the line between protecting the public and silencing debate? Essay: "Should we ever ban people from speaking?"
+- Connections: Mill's On Liberty and the "harm principle"; the Kanye West entry ban (April 2026) cited by the BBC; "no-platforming" debates in British universities. Checked against Guardian: https://www.theguardian.com/uk-news/2026/oct/30/climate-academic-andreas-malm-barred-from-entering-uk
+- Tags: free speech, law, politics, UK [LESSON]
+
+**BBC · Prominent Russian newspaper shuts down under pressure from authorities** · https://www.bbc.co.uk/news/articles/cmewepdr109do · 30 Oct 2026
+- What happened: Novaya Gazeta, one of Russia's best-known independent papers for three decades, is closing, saying "They've killed us" after it received an eviction order and its reader-donation system was disabled at the same time; six journalists connected with it have been killed, including Anna Politkovskaya 20 years ago this month. Its former editor Dmitry Muratov won the 2021 Nobel Peace Prize, and the Guardian reports editor Sergei Sokolov said the lights will go off on 9 November.
+- Big question: Can a country be free without a free press? Essay: "Is a journalist's duty to the truth or to their own safety?"
+- Connections: Orwell's "The Freedom of the Press"; Milton's Areopagitica (1644); the "fourth estate" idea; earlier log entry on Egypt shutting Mada Masr (Guardian, 28 Oct). Checked against Guardian: https://www.theguardian.com/world/2026/oct/30/novaya-gazeta-russia-independent-newspaper-to-close
+- Tags: press freedom, democracy, Russia
+
+**Guardian · Could 2026 be the year that democracy fought back? (David Van Reybrouck)** · https://www.theguardian.com/commentisfree/2026/oct/30/could-2026-be-the-year-that-democracy-fought-back · 30 Oct 2026
+- What happened: Belgian philosopher David Van Reybrouck argues that the election defeats of Viktor Orbán in Hungary, Aleksandar Vučić in Serbia and Flávio Bolsonaro in Brazil show the real divide is "democrats v post-democrats" rather than left v right, though the V-Dem report says only 7% of the world lives in liberal democracies. He warns elections alone are not enough in divided societies and must be joined by citizens deliberating together. Update to the Serbia story (see 29 Oct 07:00): the BBC reports the winning Student List is now demanding that the heads of the police and security agency stand down, while the acting president accuses it of "revolutionary justice, not rule of law" (https://www.bbc.co.uk/news/articles/cmx2dwzp0z0vo).
+- Big question: Is democracy just holding elections, or something more? When new leaders remove the old regime's people, is that justice or revenge? Essay: "Are elections the best way to choose leaders?"
+- Connections: Van Reybrouck's own book Against Elections and citizens' assemblies; ancient Athens choosing officials by lot; Popper's idea that democracy means removing rulers without bloodshed; "lustration" laws after 1989 in Central Europe.
+- Tags: democracy, politics, Europe, international [LESSON]
+
+**BBC · Spain transport minister says he won't resign over high-speed rail disaster** · https://www.bbc.co.uk/news/articles/c6zxj2e5qlxxo · 30 Oct 2026
+- What happened: After a Renfe high-speed train hit a stationary train near Urda, killing at least 69 people, transport minister Óscar Puente refused calls to resign, saying "The easy thing for me would be to leave" and that he would "not use any worker as a shield". Leaked audio appears to show a train being cleared to move while another had stalled 25km ahead, and Podemos argued blame should not fall on one worker given warnings about rail liberalisation.
+- Big question: When a system fails, who is responsible: the worker who made the last mistake, the boss, or the minister? Is resigning taking responsibility or running away? Essay: "Should leaders resign when things go wrong on their watch?"
+- Connections: Ministerial responsibility in the UK (Lord Carrington resigning over the Falklands, 1982); the "Swiss cheese" model of accidents; Serbia's Novi Sad canopy collapse that started a movement (see entry above). NYT also asks whether Spain's train system is "too old and prone to human error" (https://www.nytimes.com/2026/10/29/world/europe/spain-train-crash-renfe.html).
+- Tags: ethics, responsibility, politics, Europe
+
+**Guardian · Electrocutions, disease and no pay: how workers risk exploitation in Europe's datacentres** · https://www.theguardian.com/global-development/2026/oct/30/electrocutions-disease-and-no-pay-how-workers-risk-exploitation-in-europes-datacentres · 30 Oct 2026
+- What happened: A five-month Guardian and Investigate Europe investigation of datacentre building sites in Sweden, Norway, Belgium and the Netherlands found migrant workers with serious injuries, crowded housing (24 people to a kitchen at a Microsoft site in Gävle), an unreported tuberculosis case and unpaid overtime. An electrical tester at a Google site in Belgium was badly burned when lines he was told were dead turned out to be live; no company has been found liable, and the contractors say they take safety seriously. (Single source: investigation.)
+- Big question: Who pays the hidden cost of "clean" digital technology like AI? Are we responsible for how the things we use are made? Essay: "Is it wrong to enjoy something made by people who were treated unfairly?"
+- Connections: Victorian factory reform and the Factory Acts; the 2013 Rana Plaza collapse and fast fashion; earlier log entry on Google clearing Finnish forest for a datacentre (29 Oct).
+- Tags: AI, work, justice, Europe [AI]
+
+**BBC · Largest woodland bat survey a 'nice story of AI for good'** · https://www.bbc.co.uk/news/articles/cqm24kgr1jz4o · 30 Oct 2026
+- What happened: Devices in 310 woodlands across Britain recorded 98 million bat calls over three years, which researchers say would have taken more than 30 years to analyse without AI; open-source AI tools picked out rare species such as the red-listed Barbastelle, mostly in south-west England. UCL's Kate Jones said AI "has fundamentally changed the scale at which we can monitor wildlife". (Single source.)
+- Big question: Does AI's usefulness for science outweigh its costs? Essay: "Is technology the cause of environmental problems, or the cure?"
+- Connections: Rachel Carson's Silent Spring; citizen science; contrast with the datacentre story above and the AI-and-maths worries (BBC, 28 Oct).
+- Tags: AI, science, environment, UK [AI]
+
+**NYT · China Is Not Happy About Fan-made A.I. Videos of Sun Wukong and Lin Daiyu** · https://www.nytimes.com/2026/10/29/world/asia/china-ai-videos-sun-wukong-lin-daiyu.html · 30 Oct 2026
+- What happened: The NYT reports (feed description only; paywalled) that mash-up videos of beloved characters from Chinese classics, some made with AI, have caught the attention of the authorities. A WebSearch summary of the state-run Global Times (13 Oct, article not read directly) says platforms removed thousands of AI videos pairing the Monkey King (Journey to the West) with Lin Daiyu (Dream of the Red Chamber), which regulators say damage public understanding of traditional culture.
+- Big question: Do classic stories belong to everyone to remix, or should some works be protected from being "disrespected"? Who decides? Essay: "Should anyone be allowed to rewrite a classic?"
+- Connections: Shakespeare borrowing his plots; Tom Stoppard's Rosencrantz and Guildenstern Are Dead; state control of culture vs free expression; links to the Gruffalo entry above (who owns a character?).
+- Tags: AI, art, culture, China [AI]
+
+**NYT · What's New at the Museum? Stargazing, Escape Rooms, Bachelorette Parties and More** · https://www.nytimes.com/2026/10/30/arts/design/late-night-museums-young-people.html · 30 Oct 2026
+- What happened: The NYT reports that museums are pitching themselves as date-night destinations and "finding a generation of takers"; the same section also covers the Met's "Met Live Arts" programme of performances in surprising museum spaces (https://www.nytimes.com/2026/10/30/arts/design/museum-met-live-performances.html). (Single source: feed descriptions only, paywalled; not otherwise verified.)
+- Big question: Should a museum be a place of quiet study or a place for fun and social life? Does turning museums into nightlife cheapen the objects or bring art to new people? Essay: "What should a good museum do?" (one of the specimen paper questions)
+- Connections: The British Museum's founding aim (1753) of being open to "all studious and curious persons"; Duncan Cameron's "museum as temple or forum" (1971); earlier entry on British Library reading rooms becoming "co-working spaces" (Guardian, 29 Oct).
+- Tags: art, culture, museums [LESSON]
+
+**The Conversation · The ancient principle from English law that Donald Trump uses as a shield against defamation suits** · https://theconversation.com/the-ancient-principle-from-english-law-that-donald-trump-uses-as-a-shield-against-defamation-suits-295311 · 30 Oct 2026
+- What happened: Oxford's Eliza Bechtold explains how US "sovereign immunity", which grew from the English idea that "the king can do no wrong", means a federal official's statements made on the job can end up with the US government as defendant and the case dismissed. She gives the example of Trump calling Michigan Senate candidate Abdul El-Sayed a "jihadist" without evidence, and argues the doctrine clashes with the principle that "no one is above the law". (Single source: explainer.)
+- Big question: Should leaders be protected from being sued for what they say? Is anyone above the law? Essay: "Should the powerful be held to higher standards than everyone else?"
+- Connections: Magna Carta (1215); A.V. Dicey's rule of law; Locke against absolute monarchy; parliamentary privilege in the UK.
+- Tags: law, justice, politics, US
+
+**Psyche · When giving up teaches you more than persevering ever could (Mario I. Juarez-Garcia)** · https://psyche.co/ideas/when-giving-up-teaches-you-more-than-persevering-ever-could · 29 Oct 2026
+- What happened: Tulane philosopher Mario I. Juarez-Garcia argues that our culture's praise of perseverance hides the "exploratory value" of quitting, which can show us what we really care about; after more than 20 PhD rejections he took an office job, realised he truly loved philosophy, and was later accepted. He draws on David Schmidtz's idea of provisional "maieutic ends" and Descartes' advice to change our desires rather than the world, and calls Nietzsche's "what does not kill me makes me stronger" a cliché.
+- Big question: Is giving up always a failure? Essay: "Is it ever right to quit?" / "Does failure teach us more than success?"
+- Connections: Stoics on what is in our control; "grit" (Angela Duckworth); pairs well with the Aeon dilettante essay logged 29 Oct.
+- Tags: philosophy, mind, education
+
+**BBC · US inmate Christa Pike says she woke up 'confused and in pain' after failed execution** · https://www.bbc.co.uk/news/articles/ck62ydn7dj9eo · 30 Oct 2026
+- What happened: Christa Pike, 50, on death row for a murder she committed at 18 in 1995, released her first statement since surviving two lethal injections in September; she is thought to be the only person to survive a lethal-injection execution. Her co-accused was spared the death penalty because he was not legally an adult at the time. Also reported by NYT (https://www.nytimes.com/2026/10/30/us/christa-pike-botched-execution-statement.html). Handle with care: the crime was violent, so a lesson should focus on the principle, not the details.
+- Big question: Can the state ever be right to take a life? If an execution fails, should it be tried again? Should a few months of age decide life or death? Essay: "Is the death penalty ever justified?"
+- Connections: Kant's retributivism vs Bentham's utilitarianism; Beccaria's On Crimes and Punishments (1764); the UK's abolition of hanging (1965); the US Constitution's ban on "cruel and unusual punishments".
+- Tags: justice, law, ethics, US
+
+Themes this session: Who owns and controls ideas: an illustrator against AI firms, China policing remixes of classics, Britain barring an academic and Russia silencing a newspaper, all asking whether ideas should flow freely or be protected. Accountability for the powerful ran through a Spanish minister refusing to resign, US officials shielded from defamation suits and Serbia's new leaders removing the old regime (critics call it "revolutionary justice"). AI showed two faces: counting bats for conservation, and exploited workers building its datacentres. Small update: the BBC reports the Seoul crowd-crush footage will be removed from Call of Duty after the backlash logged on 29 Oct (https://www.bbc.co.uk/news/articles/cr1ex26lgqlqo).
