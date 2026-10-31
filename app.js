@@ -26,8 +26,10 @@ function words(s) { return (s.trim().match(/\S+/g) || []).length; }
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
 function ext(url, label) { return `<a href="${url}" target="_blank" rel="noopener">${label}</a>`; }
 
+// The topic tag sits beside the pillar of philosophy it belongs to (Metaphysics, Epistemology, Logic, Ethics, Aesthetics, Political philosophy).
+function pillarTag(x) { return x.pillar && x.pillar !== x.theme ? '<span class="tag pillar">' + x.pillar + '</span>' : ''; }
 function tags(w) {
-  return '<span class="tag">' + w.theme + '</span>' + (w.ai ? '<span class="tag ai">AI</span>' : '');
+  return '<span class="tag">' + w.theme + '</span>' + pillarTag(w) + (w.ai ? '<span class="tag ai">AI</span>' : '');
 }
 
 // News issues are keyed by the Monday they belong to; hide any dated in the future.
@@ -63,7 +65,7 @@ function newsItem(it) {
   const linked = WEEKS.find(w => w.n === it.week);
   return `
     <div class="news-item">
-      <p class="kicker"><span class="tag">${it.theme}</span>${it.ai ? '<span class="tag ai">AI</span>' : ''} ${it.source} · ${fmtIso(it.date)}</p>
+      <p class="kicker"><span class="tag">${it.theme}</span>${pillarTag(it)}${it.ai ? '<span class="tag ai">AI</span>' : ''} ${it.source} · ${fmtIso(it.date)}</p>
       <h3><a href="${it.url}" target="_blank" rel="noopener">${it.title}</a></h3>
       <p class="source">${it.author}</p>
       <p>${it.summary}</p>
@@ -178,7 +180,7 @@ function renderArchive() {
     <p class="progress">${done} of ${WEEKS.filter(w => isUnlocked(w.n)).length} weeks finished. Each lesson is written on Sunday from that week's news, and appears on Monday.</p>
     <ul class="week-list">${WEEKS.filter(w => isUnlocked(w.n)).map(w => {
       const inner = `<span class="num">Wk ${w.n}</span>
-        <span class="t">${w.title}<span class="s">${w.theme}${w.ai ? ' · AI' : ''}</span></span>`;
+        <span class="t">${w.title}<span class="s">${w.theme}${w.pillar && w.pillar !== w.theme ? ' · ' + w.pillar : ''}${w.ai ? ' · AI' : ''}</span></span>`;
       if (!isUnlocked(w.n)) return `<li><div class="locked">${inner}<span class="status">Unlocks ${fmt(unlockDate(w.n))}</span></div></li>`;
       return `<li><a href="#week-${w.n}">${inner}<span class="status ${isDone(w.n) ? 'ok' : ''}">${isDone(w.n) ? '✓ Finished' : 'Open'}</span></a></li>`;
     }).join('')}</ul>`;

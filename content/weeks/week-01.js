@@ -3,7 +3,8 @@ window.WEEKS = window.WEEKS || [];
 window.WEEKS.push({
   n: 1,
   title: "Truth after deepfakes",
-  theme: "Epistemology",
+  theme: "Knowledge",
+  pillar: "Epistemology",
   ai: true,
   standfirst: "If any photo, video or voice can be faked, how can we know anything we did not see with our own eyes?",
   article: `

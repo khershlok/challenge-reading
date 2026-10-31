@@ -53,6 +53,7 @@ main { padding-top: 32px; padding-bottom: 64px; }
 .kicker { font-family: var(--sans); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 6px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .tag { font-family: var(--sans); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
 .tag.ai { background: var(--ai-soft); color: var(--ai); }
+.tag.pillar { background: transparent; color: var(--ok); border: 1px solid currentColor; }
 
 h1 { font-size: 2.3rem; line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.015em; }
 h2 { font-size: 1.5rem; margin: 48px 0 12px; padding-top: 20px; border-top: 1px solid var(--line); }
