@@ -1,0 +1,5 @@
+# The readable site stays on this computer only (the sign-in is kept outside the repo);
+# GitHub gets index.html with the site encrypted inside it (see build.sh).
+app.js
+content/
+research/
