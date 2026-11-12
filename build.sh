@@ -59,6 +59,18 @@ if [ -s "$GUESTS" ]; then
   printf '%s' "$KEPT" > "$GUESTS"
 fi
 
+# QR guest pass from the Study for Scholarships home page: the site key locked with the guest key in
+# ~/.scholarship-guest-key (raw AES-256-CBC, fresh IV, base64(IV + ciphertext)). The page uses it only while the
+# 2-hour pass the home page saved is still valid. Make a new guest key on the home page with build.sh --new-guest-key.
+QR_KEY_FILE="$HOME/.scholarship-guest-key"
+if [ -s "$QR_KEY_FILE" ]; then
+  QR_KEY=$(tr -cd '0-9a-fA-F' < "$QR_KEY_FILE")
+  QR_IV=$(openssl rand -hex 16)
+  QR_WRAP=$({ printf '%s' "$QR_IV" | xxd -r -p;
+    printf 'challenge-key-v1 %s %s' "$KEY" "$IV" | openssl enc -aes-256-cbc -K "$QR_KEY" -iv "$QR_IV"; } | base64 -w0)
+  KEYS="$KEYS,{\"kind\":\"qr\",\"wrap\":\"$QR_WRAP\"}"
+fi
+
 grep -q 'id="siteData"' index.html && grep -q 'id="siteKeys"' index.html || { echo "index.html is missing its #siteData or #siteKeys line" >&2; exit 1; }
 sed -i -e "s|^<script type=\"text/plain\" id=\"siteData\">.*</script>\$|<script type=\"text/plain\" id=\"siteData\">$DATA</script>|" \
   -e "s|^<script type=\"application/json\" id=\"siteKeys\">.*</script>\$|<script type=\"application/json\" id=\"siteKeys\">[$KEYS]</script>|" index.html
